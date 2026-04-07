@@ -1,0 +1,30 @@
+{
+  "name": "clinica-saas",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev -w @clinica-saas/api",
+    "dev:web": "npm run dev -w @clinica-saas/web",
+    "build": "npm run build -w @clinica-saas/contracts && npm run build -w @clinica-saas/shared && npm run build -w @clinica-saas/ui",
+    "build:api": "npm run build -w @clinica-saas/api",
+    "build:web": "npm run build -w @clinica-saas/web",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
+    "typecheck": "npm run typecheck -w @clinica-saas/contracts && npm run typecheck -w @clinica-saas/shared && npm run typecheck -w @clinica-saas/api && npm run typecheck -w @clinica-saas/web",
+    "db:generate": "npm run prisma:generate -w @clinica-saas/api",
+    "db:push": "npm run prisma:push -w @clinica-saas/api",
+    "db:migrate": "npm run prisma:migrate -w @clinica-saas/api"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
