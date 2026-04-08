@@ -1,30 +1,69 @@
 import { z } from 'zod';
 
+export { 
+  LoginSchema, 
+  LoginResponseSchema, 
+  RegisterSchema, 
+  RefreshTokenSchema, 
+  ForgotPasswordSchema, 
+  ResetPasswordSchema, 
+  AuthUserResponseSchema, 
+  RefreshTokenResponseSchema 
+} from './auth';
+export type { 
+  LoginInput, 
+  RegisterInput, 
+  RefreshTokenInput, 
+  ForgotPasswordInput, 
+  ResetPasswordInput, 
+  AuthUserResponse, 
+  LoginResponsePayload, 
+  RefreshTokenResponsePayload 
+} from './auth';
+
 export const UserSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email(),
   name: z.string().min(1),
-  role: z.enum(['admin', 'clinic_owner', 'professional', 'receptionist']),
-  clinicId: z.string().uuid().nullable(),
+  organizationId: z.string().uuid().nullable().optional(),
+  roleId: z.string().uuid(),
+  isActive: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
 
-export const ClinicSchema = z.object({
+export const OrganizationSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1),
   document: z.string().min(1),
   email: z.string().email().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
+  isActive: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),
+});
+
+export const RoleSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  description: z.string().optional(),
+  isSystem: z.boolean(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export const PermissionSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  description: z.string().optional(),
+  createdAt: z.date(),
 });
 
 export const ProfessionalSchema = z.object({
   id: z.string().uuid(),
   userId: z.string().uuid(),
-  clinicId: z.string().uuid(),
+  organizationId: z.string().uuid(),
   specialty: z.enum([
     'nutritionist',
     'psychologist',
@@ -40,7 +79,7 @@ export const ProfessionalSchema = z.object({
 
 export const PatientSchema = z.object({
   id: z.string().uuid(),
-  clinicId: z.string().uuid(),
+  organizationId: z.string().uuid(),
   name: z.string().min(1),
   email: z.string().email().optional(),
   phone: z.string().optional(),
@@ -52,7 +91,7 @@ export const PatientSchema = z.object({
 
 export const AppointmentSchema = z.object({
   id: z.string().uuid(),
-  clinicId: z.string().uuid(),
+  organizationId: z.string().uuid(),
   patientId: z.string().uuid(),
   professionalId: z.string().uuid(),
   status: z.enum([
