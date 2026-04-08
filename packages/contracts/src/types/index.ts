@@ -4,30 +4,46 @@ export interface BaseEntity {
   updatedAt: Date;
 }
 
-export interface Clinic extends BaseEntity {
+export * from './auth';
+
+export interface Organization extends BaseEntity {
   name: string;
   document: string;
   email?: string;
   phone?: string;
   address?: string;
+  isActive: boolean;
 }
 
 export interface User extends BaseEntity {
   email: string;
   name: string;
-  role: 'admin' | 'clinic_owner' | 'professional' | 'receptionist';
-  clinicId?: string | null;
+  organizationId?: string | null;
+  roleId: string;
+  isActive: boolean;
+  lastLoginAt?: Date | null;
+}
+
+export interface Role extends BaseEntity {
+  name: string;
+  description?: string | null;
+  isSystem: boolean;
+}
+
+export interface Permission extends BaseEntity {
+  name: string;
+  description?: string | null;
 }
 
 export interface Professional extends BaseEntity {
   userId: string;
-  clinicId: string;
+  organizationId: string;
   specialty: string;
   document?: string;
 }
 
 export interface Patient extends BaseEntity {
-  clinicId: string;
+  organizationId: string;
   name: string;
   email?: string;
   phone?: string;
@@ -36,7 +52,7 @@ export interface Patient extends BaseEntity {
 }
 
 export interface Appointment extends BaseEntity {
-  clinicId: string;
+  organizationId: string;
   patientId: string;
   professionalId: string;
   status: string;

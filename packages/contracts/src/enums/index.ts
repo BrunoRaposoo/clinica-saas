@@ -5,6 +5,14 @@ export enum UserRole {
   RECEPTIONIST = 'receptionist',
 }
 
+export enum SystemRole {
+  SUPER_ADMIN = 'super_admin',
+  ORG_ADMIN = 'org_admin',
+  PROFESSIONAL = 'professional',
+  RECEPTIONIST = 'receptionist',
+  SUPPORT = 'support',
+}
+
 export enum ProfessionalSpecialty {
   NUTRITIONIST = 'nutritionist',
   PSYCHOLOGIST = 'psychologist',

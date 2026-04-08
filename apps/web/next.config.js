@@ -1,6 +1,7 @@
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@clinica-saas/ui'],
-  reactStrictMode: true,
+  reactStrictMode: false,
+  output: 'standalone',
 };
 
 module.exports = nextConfig;

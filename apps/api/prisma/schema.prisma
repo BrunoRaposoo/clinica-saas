@@ -7,13 +7,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Clinic {
+model Organization {
   id        String   @id @default(uuid())
   name      String
   document  String   @unique
   email     String?
   phone     String?
   address   String?
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -22,73 +23,152 @@ model Clinic {
   patients      Patient[]
   appointments  Appointment[]
 
-  @@map("clinics")
+  @@index([isActive])
+  @@map("organizations")
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  password  String
-  role      String
-  clinicId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String    @id @default(uuid())
+  email          String    @unique
+  password       String
+  name           String
+  organizationId String?
+  roleId         String    @default("00000000-0000-0000-0000-000000000001")
+  isActive       Boolean   @default(true)
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  clinic        Clinic?       @relation(fields: [clinicId], references: [id])
-  professional  Professional?
+  organization        Organization?        @relation(fields: [organizationId], references: [id])
+  role                Role                 @relation(fields: [roleId], references: [id])
+  professional        Professional?
+  passwordResetTokens PasswordResetToken[]
+  refreshTokens       RefreshToken[]
 
+  @@index([email])
+  @@index([organizationId])
   @@map("users")
 }
 
-model Professional {
-  id         String   @id @default(uuid())
-  userId     String   @unique
-  clinicId   String
-  specialty  String
-  document   String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  user         User         @relation(fields: [userId], references: [id])
-  clinic       Clinic       @relation(fields: [clinicId], references: [id])
+  users       User[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String @id @default(uuid())
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model Professional {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  organizationId String
+  specialty      String
+  document       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id])
+  organization Organization  @relation(fields: [organizationId], references: [id])
   appointments Appointment[]
 
   @@map("professionals")
 }
 
 model Patient {
-  id        String   @id @default(uuid())
-  clinicId  String
-  name      String
-  email     String?
-  phone     String?
-  document  String?
-  birthDate DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String    @id @default(uuid())
+  organizationId String
+  name           String
+  email          String?
+  phone          String?
+  document       String?
+  birthDate      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  clinic       Clinic       @relation(fields: [clinicId], references: [id])
+  organization Organization  @relation(fields: [organizationId], references: [id])
   appointments Appointment[]
 
   @@map("patients")
 }
 
 model Appointment {
-  id           String   @id @default(uuid())
-  clinicId     String
-  patientId    String
+  id             String   @id @default(uuid())
+  organizationId String
+  patientId      String
   professionalId String
-  status       String   @default("scheduled")
-  startDate    DateTime
-  endDate      DateTime
-  notes        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  status         String   @default("scheduled")
+  startDate      DateTime
+  endDate        DateTime
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  clinic       Clinic       @relation(fields: [clinicId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
   patient      Patient      @relation(fields: [patientId], references: [id])
   professional Professional @relation(fields: [professionalId], references: [id])
 
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([professionalId])
+  @@index([startDate])
   @@map("appointments")
 }

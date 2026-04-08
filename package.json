@@ -7,8 +7,11 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:api": "npm run dev -w @clinica-saas/api",
-    "dev:web": "npm run dev -w @clinica-saas/web",
+    "dev:api": "cd apps/api && yarn run dev",
+    "dev:web": "cd apps/web && yarn run dev",
+    "dev:api:kill": "fuser -k 3001/tcp 2>/dev/null || lsof -ti:3001 | xargs -r kill -9",
+    "dev:web:kill": "fuser -k 3000/tcp 2>/dev/null || lsof -ti:3000 | xargs -r kill -9",
+    "dev:kill": "npm run dev:api:kill && npm run dev:web:kill",
     "build": "npm run build -w @clinica-saas/contracts && npm run build -w @clinica-saas/shared && npm run build -w @clinica-saas/ui",
     "build:api": "npm run build -w @clinica-saas/api",
     "build:web": "npm run build -w @clinica-saas/web",
@@ -16,6 +19,9 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
     "typecheck": "npm run typecheck -w @clinica-saas/contracts && npm run typecheck -w @clinica-saas/shared && npm run typecheck -w @clinica-saas/api && npm run typecheck -w @clinica-saas/web",
+    "test": "npm run test -w @clinica-saas/api",
+    "test:watch": "npm run test:watch -w @clinica-saas/api",
+    "test:cov": "npm run test:cov -w @clinica-saas/api",
     "db:generate": "npm run prisma:generate -w @clinica-saas/api",
     "db:push": "npm run prisma:push -w @clinica-saas/api",
     "db:migrate": "npm run prisma:migrate -w @clinica-saas/api"
@@ -26,5 +32,6 @@
   },
   "engines": {
     "node": ">=20.0.0"
-  }
+  },
+  "packageManager": "yarn@1.22.22"
 }
