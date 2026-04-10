@@ -28,6 +28,7 @@ model Organization {
   messageTemplates MessageTemplate[]
   communications    Communication[]
   messageJobs      MessageJob[]
+  documents        Document[]
 
   @@index([isActive])
   @@map("organizations")
@@ -54,6 +55,8 @@ model User {
   cancelledAppointments Appointment[] @relation("CancelledByUser")
   appointmentAudits    AppointmentAudit[]
   communicationAudits CommunicationAudit[]
+  uploadedDocuments   Document[]
+  documentAudits     DocumentAudit[]
 
   @@index([email])
   @@index([organizationId])
@@ -156,6 +159,7 @@ model Patient {
   appointments Appointment[]
   waitingLists WaitingList[]
   communications Communication[]
+  documents    Document[]
 
   @@index([organizationId])
   @@index([name])
@@ -269,6 +273,7 @@ model Appointment {
   audits          AppointmentAudit[]
   communications  Communication[]
   messageJobs    MessageJob[]
+  documents      Document[]
 
   @@index([organizationId])
   @@index([startDate])
@@ -430,4 +435,56 @@ model MessageJob {
   @@index([status, scheduledFor])
   @@index([appointmentId])
   @@map("message_jobs")
+}
+
+model Document {
+  id              String    @id @default(uuid())
+  organizationId  String
+  patientId       String?
+  appointmentId  String?
+  category       String
+  type           String
+  name           String
+  description    String?
+  fileName       String
+  filePath       String
+  fileSize       Int
+  mimeType       String
+  storageProvider String    @default("local")
+  storageKey     String
+  isPublic       Boolean   @default(false)
+  expiresAt      DateTime?
+  uploadedBy     String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization      Organization       @relation(fields: [organizationId], references: [id])
+  patient         Patient?             @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointment    Appointment?        @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  uploadedByUser User                @relation(fields: [uploadedBy], references: [id])
+  audits         DocumentAudit[]
+
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([appointmentId])
+  @@index([organizationId, category])
+  @@index([createdAt])
+  @@index([uploadedBy])
+  @@map("documents")
+}
+
+model DocumentAudit {
+  id           String   @id @default(uuid())
+  documentId   String
+  action      String
+  changes     Json?
+  performedBy String
+  performedAt DateTime @default(now())
+
+  document     Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  performedByUser User    @relation(fields: [performedBy], references: [id])
+
+  @@index([documentId])
+  @@index([performedBy])
+  @@map("document_audits")
 }

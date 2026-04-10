@@ -31,6 +31,20 @@ export type {
   SendResult,
 } from './communication';
 
+export type {
+  Document,
+  DocumentListParams,
+  DocumentListResponse,
+  DocumentCreateRequest,
+  DocumentUpdateRequest,
+  DocumentAudit,
+  DocumentCategory,
+  DocumentAction,
+  StorageProvider,
+  StorageOptions,
+  StoredFile,
+} from './document';
+
 export interface Organization extends BaseEntity {
   name: string;
   document: string;
