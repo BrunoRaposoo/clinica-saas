@@ -18,10 +18,9 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users         User[]
-  professionals Professional[]
-  patients      Patient[]
-  appointments  Appointment[]
+  users        User[]
+  patients     Patient[]
+  appointments Appointment[]
 
   @@index([isActive])
   @@map("organizations")
@@ -39,11 +38,11 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  organization        Organization?        @relation(fields: [organizationId], references: [id])
-  role                Role                 @relation(fields: [roleId], references: [id])
-  professional        Professional?
+  organization         Organization?        @relation(fields: [organizationId], references: [id])
+  role                 Role                 @relation(fields: [roleId], references: [id])
   passwordResetTokens PasswordResetToken[]
   refreshTokens       RefreshToken[]
+  patientAudits       PatientAudit[]
 
   @@index([email])
   @@index([organizationId])
@@ -117,37 +116,76 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-model Professional {
-  id             String   @id @default(uuid())
-  userId         String   @unique
-  organizationId String
-  specialty      String
-  document       String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+model Patient {
+  id               String    @id @default(uuid())
+  organizationId   String
+  name             String
+  email            String?
+  phone            String?
+  document         String?
+  birthDate        DateTime?
+  gender           String?
+  addressStreet    String?
+  addressNumber    String?
+  addressComplement String?
+  addressDistrict  String?
+  addressCity      String?
+  addressState     String?
+  addressZipCode   String?
+  notes            String?
+  tags             String[]
+  isActive         Boolean   @default(true)
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  user         User          @relation(fields: [userId], references: [id])
-  organization Organization  @relation(fields: [organizationId], references: [id])
+  organization Organization     @relation(fields: [organizationId], references: [id])
+  contacts     PatientContact[]
+  audits       PatientAudit[]
   appointments Appointment[]
 
-  @@map("professionals")
+  @@index([organizationId])
+  @@index([name])
+  @@index([document])
+  @@index([phone])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@map("patients")
 }
 
-model Patient {
-  id             String    @id @default(uuid())
-  organizationId String
-  name           String
-  email          String?
-  phone          String?
-  document       String?
-  birthDate      DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+model PatientContact {
+  id         String   @id @default(uuid())
+  patientId  String
+  name       String
+  relationship String
+  phone      String?
+  email      String?
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  organization Organization  @relation(fields: [organizationId], references: [id])
-  appointments Appointment[]
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-  @@map("patients")
+  @@index([patientId])
+  @@map("patient_contacts")
+}
+
+model PatientAudit {
+  id          String   @id @default(uuid())
+  patientId   String
+  action      String
+  changes     Json?
+  performedBy String
+  performedAt DateTime @default(now())
+
+  patient     Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  performedByUser User  @relation(fields: [performedBy], references: [id])
+
+  @@index([patientId])
+  @@index([performedBy])
+  @@index([performedAt])
+  @@map("patient_audits")
 }
 
 model Appointment {
@@ -164,11 +202,9 @@ model Appointment {
 
   organization Organization @relation(fields: [organizationId], references: [id])
   patient      Patient      @relation(fields: [patientId], references: [id])
-  professional Professional @relation(fields: [professionalId], references: [id])
 
   @@index([organizationId])
   @@index([patientId])
-  @@index([professionalId])
   @@index([startDate])
   @@map("appointments")
 }

@@ -5,6 +5,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { PatientsModule } from './modules/patients/patients.module';
 import { PrismaModule } from './common/prisma.module';
 import { SeedService } from './common/seed.service';
 
@@ -20,6 +21,7 @@ import { SeedService } from './common/seed.service';
     UsersModule,
     OrganizationsModule,
     RolesModule,
+    PatientsModule,
   ],
   providers: [SeedService],
 })

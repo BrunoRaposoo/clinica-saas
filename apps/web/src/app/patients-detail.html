@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalhes do Paciente - Clínica SaaS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div id="app">
+    <main class="max-w-4xl mx-auto p-8">
+      <div class="mb-6">
+        <a href="/patients.html" class="text-blue-600 hover:underline">← Voltar para Pacientes</a>
+      </div>
+
+      <div v-if="loading" class="text-center py-8">Carregando...</div>
+
+      <div v-else-if="patient">
+        <div class="bg-white rounded-lg shadow p-8 mb-6">
+          <div class="flex justify-between items-start mb-6">
+            <div>
+              <h2 class="text-2xl font-bold">{{ patient.name }}</h2>
+              <span :class="patient.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'" class="px-2 py-1 rounded-full text-xs">
+                {{ patient.isActive ? 'Ativo' : 'Inativo' }}
+              </span>
+            </div>
+            <div class="flex gap-2">
+              <a :href="'/patients-edit.html?id=' + patient.id" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Editar
+              </a>
+              <button @click="deletePatient" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                Excluir
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-6">
+            <div>
+              <h3 class="text-sm font-medium text-gray-500">Email</h3>
+              <p>{{ patient.email || '-' }}</p>
+            </div>
+            <div>
+              <h3 class="text-sm font-medium text-gray-500">Telefone</h3>
+              <p>{{ patient.phone || '-' }}</p>
+            </div>
+            <div>
+              <h3 class="text-sm font-medium text-gray-500">CPF</h3>
+              <p>{{ patient.document || '-' }}</p>
+            </div>
+            <div>
+              <h3 class="text-sm font-medium text-gray-500">Data de Nascimento</h3>
+              <p>{{ patient.birthDate ? new Date(patient.birthDate).toLocaleDateString('pt-BR') : '-' }}</p>
+            </div>
+            <div>
+              <h3 class="text-sm font-medium text-gray-500">Gênero</h3>
+              <p>{{ genderLabel(patient.gender) }}</p>
+            </div>
+            <div>
+              <h3 class="text-sm font-medium text-gray-500">Criado em</h3>
+              <p>{{ new Date(patient.createdAt).toLocaleString('pt-BR') }}</p>
+            </div>
+          </div>
+
+          <div v-if="patient.addressStreet" class="mt-6">
+            <h3 class="text-lg font-semibold mb-2">Endereço</h3>
+            <p>
+              {{ patient.addressStreet }}{{ patient.addressNumber ? ', ' + patient.addressNumber : '' }}
+              {{ patient.addressComplement ? ' - ' + patient.addressComplement : '' }}
+              {{ patient.addressDistrict ? ', ' + patient.addressDistrict : '' }}
+              {{ patient.addressCity ? ', ' + patient.addressCity : '' }}
+              {{ patient.addressState ? ', ' + patient.addressState : '' }}
+              {{ patient.addressZipCode ? ' - ' + patient.addressZipCode : '' }}
+            </p>
+          </div>
+
+          <div v-if="patient.notes" class="mt-6">
+            <h3 class="text-lg font-semibold mb-2">Observações</h3>
+            <p>{{ patient.notes }}</p>
+          </div>
+
+          <div v-if="patient.tags && patient.tags.length" class="mt-6">
+            <h3 class="text-lg font-semibold mb-2">Tags</h3>
+            <div class="flex gap-2">
+              <span v-for="tag in patient.tags" :key="tag" class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                {{ tag }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-8 mb-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Contatos</h3>
+            <button @click="showAddContact = true" class="text-blue-600 hover:underline">+ Adicionar</button>
+          </div>
+          
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Nome</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Parentesco</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Telefone</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Email</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Principal</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr v-for="contact in patient.contacts" :key="contact.id">
+                <td class="px-4 py-2">{{ contact.name }}</td>
+                <td class="px-4 py-2">{{ contact.relationship }}</td>
+                <td class="px-4 py-2">{{ contact.phone || '-' }}</td>
+                <td class="px-4 py-2">{{ contact.email || '-' }}</td>
+                <td class="px-4 py-2">
+                  <span v-if="contact.isPrimary" class="text-green-600">✓</span>
+                </td>
+                <td class="px-4 py-2">
+                  <button @click="deleteContact(contact.id)" class="text-red-600 hover:text-red-800">Excluir</button>
+                </td>
+              </tr>
+              <tr v-if="!patient.contacts || patient.contacts.length === 0">
+                <td colspan="6" class="px-4 py-4 text-center text-gray-500">Nenhum contato cadastrado.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-8">
+          <h3 class="text-lg font-semibold mb-4">Histórico de Alterações</h3>
+          <div v-if="audits.length">
+            <div v-for="audit in audits" :key="audit.id" class="border-b py-2">
+              <div class="flex justify-between">
+                <span class="font-medium">{{ auditActionLabel(audit.action) }}</span>
+                <span class="text-sm text-gray-500">{{ new Date(audit.performedAt).toLocaleString('pt-BR') }}</span>
+              </div>
+              <div class="text-sm text-gray-500">
+                Por: {{ audit.performedByUser?.name || audit.performedBy }}
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-gray-500">Nenhuma alteração registrada.</div>
+        </div>
+      </div>
+
+      <div v-if="error" class="mt-4 p-4 bg-red-100 text-red-700 rounded">{{ error }}</div>
+    </main>
+
+    <div v-if="showAddContact" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div class="bg-white p-6 rounded-lg w-96">
+        <h3 class="text-lg font-semibold mb-4">Novo Contato</h3>
+        <div class="space-y-3">
+          <input v-model="newContact.name" placeholder="Nome *" class="w-full px-3 py-2 border rounded">
+          <input v-model="newContact.relationship" placeholder="Parentesco *" class="w-full px-3 py-2 border rounded">
+          <input v-model="newContact.phone" placeholder="Telefone" class="w-full px-3 py-2 border rounded">
+          <input v-model="newContact.email" placeholder="Email" type="email" class="w-full px-3 py-2 border rounded">
+          <label class="flex items-center">
+            <input v-model="newContact.isPrimary" type="checkbox" class="mr-2"> Contato principal
+          </label>
+        </div>
+        <div class="flex justify-end gap-2 mt-4">
+          <button @click="showAddContact = false" class="px-4 py-2 border rounded">Cancelar</button>
+          <button @click="addContact" class="px-4 py-2 bg-blue-600 text-white rounded">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        const API_URL = 'http://localhost:3001/api/v1';
+        const accessToken = localStorage.getItem('accessToken');
+        
+        const patient = ref(null);
+        const audits = ref([]);
+        const loading = ref(true);
+        const error = ref('');
+        const showAddContact = ref(false);
+        const newContact = ref({ name: '', relationship: '', phone: '', email: '', isPrimary: false });
+
+        const loadPatient = async () => {
+          const params = new URLSearchParams(window.location.search);
+          const id = params.get('id');
+          
+          if (!id) {
+            error.value = 'ID do paciente não fornecido';
+            loading.value = false;
+            return;
+          }
+
+          try {
+            const res = await fetch(API_URL + '/patients/' + id, {
+              headers: { 'Authorization': 'Bearer ' + accessToken }
+            });
+            
+            if (!res.ok) {
+              if (res.status === 401) window.location.href = '/login.html';
+              throw new Error('Erro ao carregar paciente');
+            }
+            
+            patient.value = await res.json();
+            
+            const auditRes = await fetch(API_URL + '/patients/' + id + '/audit', {
+              headers: { 'Authorization': 'Bearer ' + accessToken }
+            });
+            if (auditRes.ok) {
+              audits.value = await auditRes.json();
+            }
+          } catch (e) {
+            error.value = e.message;
+          } finally {
+            loading.value = false;
+          }
+        };
+
+        const deletePatient = async () => {
+          if (!confirm('Tem certeza que deseja excluir este paciente?')) return;
+          
+          try {
+            const res = await fetch(API_URL + '/patients/' + patient.value.id, {
+              method: 'DELETE',
+              headers: { 'Authorization': 'Bearer ' + accessToken }
+            });
+            if (!res.ok) throw new Error('Erro ao excluir');
+            window.location.href = '/patients.html';
+          } catch (e) {
+            error.value = e.message;
+          }
+        };
+
+        const addContact = async () => {
+          try {
+            const res = await fetch(API_URL + '/patients/' + patient.value.id + '/contacts', {
+              method: 'POST',
+              headers: {
+                'Authorization': 'Bearer ' + accessToken,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(newContact.value)
+            });
+            if (!res.ok) throw new Error('Erro ao adicionar contato');
+            showAddContact.value = false;
+            newContact.value = { name: '', relationship: '', phone: '', email: '', isPrimary: false };
+            loadPatient();
+          } catch (e) {
+            error.value = e.message;
+          }
+        };
+
+        const deleteContact = async (contactId) => {
+          if (!confirm('Excluir este contato?')) return;
+          
+          try {
+            const res = await fetch(API_URL + '/patients/contacts/' + contactId, {
+              method: 'DELETE',
+              headers: { 'Authorization': 'Bearer ' + accessToken }
+            });
+            if (!res.ok) throw new Error('Erro ao excluir contato');
+            loadPatient();
+          } catch (e) {
+            error.value = e.message;
+          }
+        };
+
+        const genderLabel = (g) => {
+          const map = { male: 'Masculino', female: 'Feminino', other: 'Outro' };
+          return g ? map[g] : '-';
+        };
+
+        const auditActionLabel = (a) => {
+          const map = { create: 'Criação', update: 'Atualização', delete: 'Exclusão' };
+          return map[a] || a;
+        };
+
+        onMounted(loadPatient);
+
+        return { patient, audits, loading, error, showAddContact, newContact, deletePatient, addContact, deleteContact, genderLabel, auditActionLabel };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

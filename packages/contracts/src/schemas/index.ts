@@ -133,3 +133,5 @@ export const PaginatedResponseSchema = z.object({
   items: z.array(z.any()),
   pagination: PaginationSchema,
 });
+
+export * from './patient';
