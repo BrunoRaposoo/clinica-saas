@@ -42,25 +42,6 @@ export interface Professional extends BaseEntity {
   document?: string;
 }
 
-export interface Patient extends BaseEntity {
-  organizationId: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  document?: string;
-  birthDate?: Date;
-}
-
-export interface Appointment extends BaseEntity {
-  organizationId: string;
-  patientId: string;
-  professionalId: string;
-  status: string;
-  startDate: Date;
-  endDate: Date;
-  notes?: string;
-}
-
 export interface ApiError {
   code: string;
   message: string;
