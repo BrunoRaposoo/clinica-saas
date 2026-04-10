@@ -121,6 +121,26 @@ export class CommunicationsService {
     }));
   }
 
+  async findByAppointment(organizationId: string, appointmentId: string) {
+    const items = await this.prisma.communication.findMany({
+      where: { organizationId, appointmentId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        patient: { select: { id: true, name: true } },
+      },
+    });
+
+    return items.map((item) => ({
+      id: item.id,
+      channel: item.channel,
+      type: item.type,
+      recipient: item.recipient,
+      message: item.message,
+      status: item.status,
+      createdAt: item.createdAt.toISOString(),
+    }));
+  }
+
   async create(organizationId: string, userId: string, data: CreateCommunicationDto) {
     const provider = getProvider(data.channel);
     

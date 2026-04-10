@@ -31,6 +31,12 @@ export class CommunicationsController {
     return this.communicationsService.findByPatient(organizationId, patientId);
   }
 
+  @Get('appointment/:appointmentId')
+  @ApiOperation({ summary: 'Comunicações do agendamento' })
+  findByAppointment(@Param('appointmentId') appointmentId: string, @CurrentOrganization() organizationId: string) {
+    return this.communicationsService.findByAppointment(organizationId, appointmentId);
+  }
+
   @Post()
   @ApiOperation({ summary: 'Criar comunicação' })
   create(

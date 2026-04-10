@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { CreateAppointmentDto, UpdateAppointmentDto, CancelAppointmentDto, RescheduleAppointmentDto, ListAppointmentsQueryDto, CalendarQueryDto, AvailabilityQueryDto } from './dto/appointment.dto';
+import { AppointmentsNotificationsService } from './appointments-notifications.service';
 
 @Injectable()
 export class AppointmentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: AppointmentsNotificationsService,
+  ) {}
 
   async findAll(organizationId: string, query: ListAppointmentsQueryDto) {
     const { page = 1, limit = 20, startDate, endDate, professionalId, patientId, status } = query;
@@ -151,6 +155,12 @@ export class AppointmentsService {
 
     await this.createAudit(appointment.id, userId, 'create', { startDate: dto.startDate, patientId: dto.patientId, professionalId: dto.professionalId });
 
+    await this.notifications.scheduleConfirmation(appointment.id, organizationId);
+
+    const appointmentDate = new Date(appointment.startDate);
+    appointmentDate.setHours(appointmentDate.getHours() - 24);
+    await this.notifications.scheduleReminder(appointment.id, organizationId, appointmentDate);
+
     return {
       ...appointment,
       startDate: appointment.startDate.toISOString(),
@@ -230,6 +240,8 @@ export class AppointmentsService {
 
     await this.createAudit(id, userId, 'cancel', { reason: dto.reason });
 
+    await this.notifications.scheduleCancellation(id, organizationId);
+
     return { success: true, message: 'Agendamento cancelado com sucesso.' };
   }
 
@@ -270,6 +282,19 @@ export class AppointmentsService {
     ]);
 
     await this.createAudit(id, userId, 'reschedule', { oldDate: existing.startDate.toISOString(), newDate: dto.newStartDate });
+
+    const newAppointment = await this.prisma.appointment.findFirst({
+      where: { organizationId, patientId: existing.patientId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (newAppointment) {
+      await this.notifications.scheduleConfirmation(newAppointment.id, organizationId);
+
+      const appointmentDate = new Date(newAppointment.startDate);
+      appointmentDate.setHours(appointmentDate.getHours() - 24);
+      await this.notifications.scheduleReminder(newAppointment.id, organizationId, appointmentDate);
+    }
 
     return { success: true, message: 'Agendamento reagendado com sucesso.' };
   }

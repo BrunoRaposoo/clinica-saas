@@ -4,6 +4,8 @@ import { CreateTemplateDto, UpdateTemplateDto, ListTemplatesQueryDto } from './d
 
 @Injectable()
 export class TemplatesService {
+  private readonly templateCache = new Map<string, { body: string }>();
+
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(organizationId: string, query: ListTemplatesQueryDto) {
@@ -167,5 +169,44 @@ export class TemplatesService {
         performedBy: userId,
       },
     });
+  }
+
+  applyPlaceholders(template: string, data: Record<string, string>): string {
+    return template
+      .replace(/\{\{patient_name\}\}/g, data.patientName || '')
+      .replace(/\{\{patient_email\}\}/g, data.patientEmail || '')
+      .replace(/\{\{patient_phone\}\}/g, data.patientPhone || '')
+      .replace(/\{\{appointment_date\}\}/g, data.appointmentDate || '')
+      .replace(/\{\{appointment_time\}\}/g, data.appointmentTime || '')
+      .replace(/\{\{professional_name\}\}/g, data.professionalName || '')
+      .replace(/\{\{service_name\}\}/g, data.serviceName || '')
+      .replace(/\{\{clinic_name\}\}/g, data.clinicName || '')
+      .replace(/\{\{clinic_phone\}\}/g, data.clinicPhone || '')
+      .replace(/\{\{cancellation_reason\}\}/g, data.cancellationReason || '');
+  }
+
+  validatePlaceholders(template: string): { valid: boolean; missing: string[] } {
+    const placeholders = template.match(/\{\{(\w+)\}\}/g) || [];
+    const validPlaceholders = [
+      'patient_name',
+      'patient_email',
+      'patient_phone',
+      'appointment_date',
+      'appointment_time',
+      'professional_name',
+      'service_name',
+      'clinic_name',
+      'clinic_phone',
+      'cancellation_reason',
+    ];
+    const missing = placeholders
+      .map((p) => p.replace(/\{\{|\}\}/g, ''))
+      .filter((p) => !validPlaceholders.includes(p));
+
+    return { valid: missing.length === 0, missing: missing };
+  }
+
+  replaceTemplateBody(id: string, data: Record<string, string>): string {
+    return this.templateCache.get(id)?.body || '';
   }
 }
