@@ -5,6 +5,27 @@ export interface BaseEntity {
 }
 
 export * from './auth';
+export type {
+  PatientListParams,
+  PatientListResponse,
+  PatientCreateRequest,
+  PatientUpdateRequest,
+  PatientContactCreateRequest,
+  PatientContactUpdateRequest,
+} from './patient';
+export type {
+  AppointmentListParams,
+  AppointmentListResponse,
+  AppointmentCreateRequest,
+  AppointmentUpdateRequest,
+  AppointmentCancelRequest,
+  AppointmentRescheduleRequest,
+  CalendarResponse,
+  AvailabilityResponse,
+  Professional,
+  ScheduleBlock,
+  ScheduleBlockCreateRequest,
+} from './appointment';
 
 export interface Organization extends BaseEntity {
   name: string;
@@ -33,13 +54,6 @@ export interface Role extends BaseEntity {
 export interface Permission extends BaseEntity {
   name: string;
   description?: string | null;
-}
-
-export interface Professional extends BaseEntity {
-  userId: string;
-  organizationId: string;
-  specialty: string;
-  document?: string;
 }
 
 export interface ApiError {

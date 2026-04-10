@@ -20,19 +20,11 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/index.ts
 var src_exports = {};
 __export(src_exports, {
-  ApiResponseSchema: () => ApiResponseSchema,
-  AppointmentSchema: () => AppointmentSchema,
-  AppointmentStatus: () => AppointmentStatus,
-  ClinicSchema: () => ClinicSchema,
   MessageStatus: () => MessageStatus,
-  PaginatedResponseSchema: () => PaginatedResponseSchema,
-  PaginationSchema: () => PaginationSchema,
-  PatientSchema: () => PatientSchema,
   PaymentStatus: () => PaymentStatus,
-  ProfessionalSchema: () => ProfessionalSchema,
   ProfessionalSpecialty: () => ProfessionalSpecialty,
-  UserRole: () => UserRole,
-  UserSchema: () => UserSchema
+  SystemRole: () => SystemRole,
+  UserRole: () => UserRole
 });
 module.exports = __toCommonJS(src_exports);
 
@@ -44,6 +36,14 @@ var UserRole = /* @__PURE__ */ ((UserRole2) => {
   UserRole2["RECEPTIONIST"] = "receptionist";
   return UserRole2;
 })(UserRole || {});
+var SystemRole = /* @__PURE__ */ ((SystemRole2) => {
+  SystemRole2["SUPER_ADMIN"] = "super_admin";
+  SystemRole2["ORG_ADMIN"] = "org_admin";
+  SystemRole2["PROFESSIONAL"] = "professional";
+  SystemRole2["RECEPTIONIST"] = "receptionist";
+  SystemRole2["SUPPORT"] = "support";
+  return SystemRole2;
+})(SystemRole || {});
 var ProfessionalSpecialty = /* @__PURE__ */ ((ProfessionalSpecialty2) => {
   ProfessionalSpecialty2["NUTRITIONIST"] = "nutritionist";
   ProfessionalSpecialty2["PSYCHOLOGIST"] = "psychologist";
@@ -53,15 +53,6 @@ var ProfessionalSpecialty = /* @__PURE__ */ ((ProfessionalSpecialty2) => {
   ProfessionalSpecialty2["OTHER"] = "other";
   return ProfessionalSpecialty2;
 })(ProfessionalSpecialty || {});
-var AppointmentStatus = /* @__PURE__ */ ((AppointmentStatus2) => {
-  AppointmentStatus2["SCHEDULED"] = "scheduled";
-  AppointmentStatus2["CONFIRMED"] = "confirmed";
-  AppointmentStatus2["IN_PROGRESS"] = "in_progress";
-  AppointmentStatus2["COMPLETED"] = "completed";
-  AppointmentStatus2["CANCELLED"] = "cancelled";
-  AppointmentStatus2["NO_SHOW"] = "no_show";
-  return AppointmentStatus2;
-})(AppointmentStatus || {});
 var PaymentStatus = /* @__PURE__ */ ((PaymentStatus2) => {
   PaymentStatus2["PENDING"] = "pending";
   PaymentStatus2["PAID"] = "paid";
@@ -75,108 +66,12 @@ var MessageStatus = /* @__PURE__ */ ((MessageStatus2) => {
   MessageStatus2["FAILED"] = "failed";
   return MessageStatus2;
 })(MessageStatus || {});
-
-// src/schemas/index.ts
-var import_zod = require("zod");
-var UserSchema = import_zod.z.object({
-  id: import_zod.z.string().uuid(),
-  email: import_zod.z.string().email(),
-  name: import_zod.z.string().min(1),
-  role: import_zod.z.enum(["admin", "clinic_owner", "professional", "receptionist"]),
-  clinicId: import_zod.z.string().uuid().nullable(),
-  createdAt: import_zod.z.date(),
-  updatedAt: import_zod.z.date()
-});
-var ClinicSchema = import_zod.z.object({
-  id: import_zod.z.string().uuid(),
-  name: import_zod.z.string().min(1),
-  document: import_zod.z.string().min(1),
-  email: import_zod.z.string().email().optional(),
-  phone: import_zod.z.string().optional(),
-  address: import_zod.z.string().optional(),
-  createdAt: import_zod.z.date(),
-  updatedAt: import_zod.z.date()
-});
-var ProfessionalSchema = import_zod.z.object({
-  id: import_zod.z.string().uuid(),
-  userId: import_zod.z.string().uuid(),
-  clinicId: import_zod.z.string().uuid(),
-  specialty: import_zod.z.enum([
-    "nutritionist",
-    "psychologist",
-    "physiotherapist",
-    "dentist",
-    "general_practitioner",
-    "other"
-  ]),
-  document: import_zod.z.string().optional(),
-  createdAt: import_zod.z.date(),
-  updatedAt: import_zod.z.date()
-});
-var PatientSchema = import_zod.z.object({
-  id: import_zod.z.string().uuid(),
-  clinicId: import_zod.z.string().uuid(),
-  name: import_zod.z.string().min(1),
-  email: import_zod.z.string().email().optional(),
-  phone: import_zod.z.string().optional(),
-  document: import_zod.z.string().optional(),
-  birthDate: import_zod.z.date().optional(),
-  createdAt: import_zod.z.date(),
-  updatedAt: import_zod.z.date()
-});
-var AppointmentSchema = import_zod.z.object({
-  id: import_zod.z.string().uuid(),
-  clinicId: import_zod.z.string().uuid(),
-  patientId: import_zod.z.string().uuid(),
-  professionalId: import_zod.z.string().uuid(),
-  status: import_zod.z.enum([
-    "scheduled",
-    "confirmed",
-    "in_progress",
-    "completed",
-    "cancelled",
-    "no_show"
-  ]),
-  startDate: import_zod.z.date(),
-  endDate: import_zod.z.date(),
-  notes: import_zod.z.string().optional(),
-  createdAt: import_zod.z.date(),
-  updatedAt: import_zod.z.date()
-});
-var ApiResponseSchema = import_zod.z.object({
-  success: import_zod.z.boolean(),
-  data: import_zod.z.any().optional(),
-  error: import_zod.z.object({
-    code: import_zod.z.string(),
-    message: import_zod.z.string(),
-    details: import_zod.z.any().optional()
-  }).optional(),
-  timestamp: import_zod.z.date()
-});
-var PaginationSchema = import_zod.z.object({
-  page: import_zod.z.number().int().positive().default(1),
-  limit: import_zod.z.number().int().positive().max(100).default(20),
-  total: import_zod.z.number().int().nonnegative(),
-  totalPages: import_zod.z.number().int().nonnegative()
-});
-var PaginatedResponseSchema = import_zod.z.object({
-  items: import_zod.z.array(import_zod.z.any()),
-  pagination: PaginationSchema
-});
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  ApiResponseSchema,
-  AppointmentSchema,
-  AppointmentStatus,
-  ClinicSchema,
   MessageStatus,
-  PaginatedResponseSchema,
-  PaginationSchema,
-  PatientSchema,
   PaymentStatus,
-  ProfessionalSchema,
   ProfessionalSpecialty,
-  UserRole,
-  UserSchema
+  SystemRole,
+  UserRole
 });
 //# sourceMappingURL=index.js.map

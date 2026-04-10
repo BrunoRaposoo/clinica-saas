@@ -22,15 +22,6 @@ export enum ProfessionalSpecialty {
   OTHER = 'other',
 }
 
-export enum AppointmentStatus {
-  SCHEDULED = 'scheduled',
-  CONFIRMED = 'confirmed',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-  NO_SHOW = 'no_show',
-}
-
 export enum PaymentStatus {
   PENDING = 'pending',
   PAID = 'paid',
