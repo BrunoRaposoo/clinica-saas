@@ -45,6 +45,20 @@ export type {
   StoredFile,
 } from './document';
 
+export type {
+  Task,
+  TaskListParams,
+  TaskListResponse,
+  TaskCreateRequest,
+  TaskUpdateRequest,
+  TaskStatusUpdateRequest,
+  TaskComment,
+  TaskCommentCreateRequest,
+  TaskStatus,
+  TaskPriority,
+  TaskAction,
+} from './task';
+
 export interface Organization extends BaseEntity {
   name: string;
   document: string;
