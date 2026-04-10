@@ -18,9 +18,13 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users        User[]
-  patients     Patient[]
-  appointments Appointment[]
+  users             User[]
+  patients          Patient[]
+  appointments      Appointment[]
+  professionals     Professional[]
+  appointmentTypes  AppointmentType[]
+  scheduleBlocks    ScheduleBlock[]
+  waitingLists      WaitingList[]
 
   @@index([isActive])
   @@map("organizations")
@@ -40,9 +44,12 @@ model User {
 
   organization         Organization?        @relation(fields: [organizationId], references: [id])
   role                 Role                 @relation(fields: [roleId], references: [id])
-  passwordResetTokens PasswordResetToken[]
-  refreshTokens       RefreshToken[]
-  patientAudits       PatientAudit[]
+  passwordResetTokens  PasswordResetToken[]
+  refreshTokens        RefreshToken[]
+  patientAudits        PatientAudit[]
+  professional         Professional?
+  cancelledAppointments Appointment[] @relation("CancelledByUser")
+  appointmentAudits    AppointmentAudit[]
 
   @@index([email])
   @@index([organizationId])
@@ -143,6 +150,7 @@ model Patient {
   contacts     PatientContact[]
   audits       PatientAudit[]
   appointments Appointment[]
+  waitingLists WaitingList[]
 
   @@index([organizationId])
   @@index([name])
@@ -155,15 +163,15 @@ model Patient {
 }
 
 model PatientContact {
-  id         String   @id @default(uuid())
-  patientId  String
-  name       String
+  id          String   @id @default(uuid())
+  patientId   String
+  name        String
   relationship String
-  phone      String?
-  email      String?
-  isPrimary  Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  phone       String?
+  email       String?
+  isPrimary   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
@@ -179,8 +187,8 @@ model PatientAudit {
   performedBy String
   performedAt DateTime @default(now())
 
-  patient     Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  performedByUser User  @relation(fields: [performedBy], references: [id])
+  patient        Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  performedByUser User    @relation(fields: [performedBy], references: [id])
 
   @@index([patientId])
   @@index([performedBy])
@@ -188,23 +196,138 @@ model PatientAudit {
   @@map("patient_audits")
 }
 
+model Professional {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  organizationId   String
+  specialty        String
+  appointmentTypeId String?
+  color            String   @default("#3B82F6")
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User            @relation(fields: [userId], references: [id])
+  organization     Organization    @relation(fields: [organizationId], references: [id])
+  appointmentType  AppointmentType? @relation(fields: [appointmentTypeId], references: [id])
+  appointments     Appointment[]
+  scheduleBlocks   ScheduleBlock[]
+  waitingLists     WaitingList[]
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@index([userId])
+  @@map("professionals")
+}
+
+model AppointmentType {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  duration       Int      @default(30)
+  color          String   @default("#3B82F6")
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization  Organization  @relation(fields: [organizationId], references: [id])
+  appointments  Appointment[]
+  professionals Professional[]
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@map("appointment_types")
+}
+
 model Appointment {
+  id                 String    @id @default(uuid())
+  organizationId     String
+  patientId          String
+  professionalId      String
+  appointmentTypeId   String?
+  status             String    @default("scheduled")
+  startDate          DateTime
+  endDate            DateTime
+  duration           Int
+  notes              String?
+  cancellationReason String?
+  cancelledBy        String?
+  cancelledAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  organization     Organization    @relation(fields: [organizationId], references: [id])
+  patient          Patient         @relation(fields: [patientId], references: [id])
+  professional    Professional     @relation(fields: [professionalId], references: [id])
+  appointmentType AppointmentType? @relation(fields: [appointmentTypeId], references: [id])
+  cancelledByUser User?            @relation("CancelledByUser", fields: [cancelledBy], references: [id])
+  audits          AppointmentAudit[]
+
+  @@index([organizationId])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([professionalId])
+  @@index([patientId])
+  @@index([status])
+  @@index([professionalId, startDate])
+  @@map("appointments")
+}
+
+model AppointmentAudit {
+  id            String   @id @default(uuid())
+  appointmentId String
+  action        String
+  changes       Json?
+  performedBy   String
+  performedAt   DateTime @default(now())
+
+  appointment  Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  performedByUser User     @relation(fields: [performedBy], references: [id])
+
+  @@index([appointmentId])
+  @@index([performedBy])
+  @@index([performedAt])
+  @@map("appointment_audits")
+}
+
+model ScheduleBlock {
+  id             String   @id @default(uuid())
+  organizationId String
+  professionalId String
+  startDate      DateTime
+  endDate        DateTime
+  reason         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([professionalId])
+  @@index([startDate])
+  @@index([endDate])
+  @@map("schedule_blocks")
+}
+
+model WaitingList {
   id             String   @id @default(uuid())
   organizationId String
   patientId      String
   professionalId String
-  status         String   @default("scheduled")
-  startDate      DateTime
-  endDate        DateTime
+  preferredDate  DateTime?
   notes          String?
+  status         String   @default("waiting")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id])
   patient      Patient      @relation(fields: [patientId], references: [id])
+  professional Professional @relation(fields: [professionalId], references: [id])
 
   @@index([organizationId])
   @@index([patientId])
-  @@index([startDate])
-  @@map("appointments")
+  @@index([professionalId])
+  @@index([status])
+  @@map("waiting_lists")
 }

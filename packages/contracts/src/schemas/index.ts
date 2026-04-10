@@ -134,4 +134,5 @@ export const PaginatedResponseSchema = z.object({
   pagination: PaginationSchema,
 });
 
-export * from './patient';
+export type { Patient, PatientCreate, PatientUpdate, PatientContact, PatientContactCreate, PatientContactUpdate } from './patient';
+export type { Appointment, AppointmentCreate, AppointmentUpdate, AppointmentCancel, AppointmentReschedule, AppointmentStatus } from './appointment';
