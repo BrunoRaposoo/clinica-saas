@@ -11,6 +11,7 @@ import { ProfessionalsModule } from './modules/professionals/professionals.modul
 import { ScheduleBlocksModule } from './modules/schedule-blocks/schedule-blocks.module';
 import { TemplatesModule } from './modules/templates/templates.module';
 import { CommunicationsModule } from './modules/communications/communications.module';
+import { DocumentsModule } from './modules/documents/documents.module';
 import { PrismaModule } from './common/prisma.module';
 import { SeedService } from './common/seed.service';
 
@@ -32,6 +33,7 @@ import { SeedService } from './common/seed.service';
     ScheduleBlocksModule,
     TemplatesModule,
     CommunicationsModule,
+    DocumentsModule,
   ],
   providers: [SeedService],
 })
