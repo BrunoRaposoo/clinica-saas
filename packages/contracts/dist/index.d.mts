@@ -1,4 +1,4 @@
-export { ApiResponseSchema, Appointment, AppointmentCancel, AppointmentCreate, AppointmentReschedule, AppointmentSchema, AppointmentStatus, AppointmentUpdate, AuthUserResponse, AuthUserResponseSchema, ForgotPasswordInput, ForgotPasswordSchema, LoginInput, LoginResponsePayload, LoginResponseSchema, LoginSchema, MessageStatus, OrganizationSchema, PaginatedResponseSchema, PaginationSchema, Patient, PatientContact, PatientContactCreate, PatientContactUpdate, PatientCreate, PatientSchema, PatientUpdate, PaymentStatus, PermissionSchema, ProfessionalSchema, ProfessionalSpecialty, RefreshTokenInput, RefreshTokenResponsePayload, RefreshTokenResponseSchema, RefreshTokenSchema, RegisterInput, RegisterSchema, ResetPasswordInput, ResetPasswordSchema, RoleSchema, SystemRole, UserRole, UserSchema } from './zod.mjs';
+export { ApiResponseSchema, AppointmentSchema, AuthUserResponse, AuthUserResponseSchema, ForgotPasswordInput, ForgotPasswordSchema, LoginInput, LoginResponsePayload, LoginResponseSchema, LoginSchema, MessageStatus, OrganizationSchema, PaginatedResponseSchema, PaginationSchema, PatientSchema, PaymentStatus, PermissionSchema, ProfessionalSchema, ProfessionalSpecialty, RefreshTokenInput, RefreshTokenResponsePayload, RefreshTokenResponseSchema, RefreshTokenSchema, RegisterInput, RegisterSchema, ResetPasswordInput, ResetPasswordSchema, RoleSchema, SystemRole, UserRole, UserSchema } from './zod.mjs';
 import 'zod';
 
 interface AuthUser {
@@ -88,6 +88,14 @@ interface PatientContact {
     isPrimary: boolean;
     createdAt: string;
     updatedAt: string;
+}
+interface PatientAudit {
+    id: string;
+    patientId: string;
+    action: 'create' | 'update' | 'delete';
+    changes?: Record<string, unknown> | null;
+    performedBy: string;
+    performedAt: string;
 }
 interface PatientListParams {
     page?: number;
@@ -266,6 +274,16 @@ interface Professional {
         name: string;
     };
 }
+interface AppointmentType {
+    id: string;
+    organizationId: string;
+    name: string;
+    duration: number;
+    color: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
 interface ScheduleBlock {
     id: string;
     organizationId: string;
@@ -282,6 +300,19 @@ interface ScheduleBlockCreateRequest {
     endDate: string;
     reason: string;
 }
+interface WaitingList {
+    id: string;
+    organizationId: string;
+    patientId: string;
+    professionalId: string;
+    preferredDate?: string | null;
+    notes?: string | null;
+    status: 'waiting' | 'scheduled' | 'cancelled';
+    createdAt: string;
+    updatedAt: string;
+    patient?: PatientBasic;
+    professional?: ProfessionalBasic;
+}
 interface AvailabilityResponse {
     date: string;
     availableSlots: string[];
@@ -290,6 +321,323 @@ interface AvailabilityResponse {
         end: string;
         reason: string;
     }[];
+}
+
+type MessageChannel = 'whatsapp' | 'email' | 'sms';
+type MessageType = 'reminder' | 'confirmation' | 'cancellation' | 'custom';
+type CommunicationStatus = 'pending' | 'sent' | 'delivered' | 'failed';
+type JobType = 'reminder' | 'confirmation' | 'cancellation';
+type JobStatus = 'pending' | 'processing' | 'completed' | 'failed';
+interface MessageTemplate {
+    id: string;
+    organizationId: string;
+    name: string;
+    channel: MessageChannel;
+    type: MessageType;
+    subject?: string;
+    body: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+interface MessageTemplateListParams {
+    page?: number;
+    limit?: number;
+    channel?: MessageChannel;
+    type?: MessageType;
+    isActive?: boolean;
+}
+interface MessageTemplateListResponse {
+    items: MessageTemplate[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+interface MessageTemplateCreateRequest {
+    name: string;
+    channel: MessageChannel;
+    type: MessageType;
+    subject?: string;
+    body: string;
+}
+interface MessageTemplateUpdateRequest {
+    name?: string;
+    subject?: string;
+    body?: string;
+    isActive?: boolean;
+}
+interface Communication {
+    id: string;
+    organizationId: string;
+    patientId: string;
+    appointmentId?: string;
+    templateId?: string;
+    channel: MessageChannel;
+    type: string;
+    recipient: string;
+    message: string;
+    status: CommunicationStatus;
+    provider?: string;
+    providerMessageId?: string;
+    errorMessage?: string;
+    scheduledAt: string;
+    sentAt?: string;
+    deliveredAt?: string;
+    createdAt: string;
+    patient?: {
+        id: string;
+        name: string;
+    };
+    appointment?: {
+        id: string;
+        startDate: string;
+    };
+}
+interface CommunicationListParams {
+    page?: number;
+    limit?: number;
+    patientId?: string;
+    appointmentId?: string;
+    channel?: MessageChannel;
+    status?: CommunicationStatus;
+    startDate?: string;
+    endDate?: string;
+}
+interface CommunicationListResponse {
+    items: Communication[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+interface CommunicationCreateRequest {
+    patientId: string;
+    appointmentId?: string;
+    channel: MessageChannel;
+    type: MessageType;
+    recipient: string;
+    message: string;
+    templateId?: string;
+}
+interface CommunicationAudit {
+    id: string;
+    communicationId: string;
+    action: string;
+    changes?: Record<string, unknown> | null;
+    performedBy: string;
+    performedAt: string;
+}
+interface MessageJob {
+    id: string;
+    organizationId: string;
+    type: JobType;
+    appointmentId: string;
+    scheduledFor: string;
+    status: JobStatus;
+    retryCount: number;
+    lastError?: string;
+    createdAt: string;
+    processedAt?: string;
+}
+interface MessageJobListParams {
+    page?: number;
+    limit?: number;
+    type?: JobType;
+    status?: JobStatus;
+    appointmentId?: string;
+}
+interface MessageJobListResponse {
+    items: MessageJob[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+interface SendParams {
+    to: string;
+    subject?: string;
+    body: string;
+    appointmentId?: string;
+}
+interface SendResult {
+    success: boolean;
+    providerMessageId?: string;
+    error?: string;
+}
+interface IMessageProvider {
+    channel: MessageChannel;
+    send(params: SendParams): Promise<SendResult>;
+    getStatus(messageId: string): Promise<CommunicationStatus>;
+}
+
+type DocumentCategory = 'identity' | 'exams' | 'prescriptions' | 'reports' | 'administrative' | 'other';
+type DocumentAction = 'create' | 'read' | 'update' | 'delete' | 'download';
+type StorageProvider = 's3' | 'local';
+interface Document {
+    id: string;
+    organizationId: string;
+    patientId?: string;
+    appointmentId?: string;
+    category: DocumentCategory;
+    type: string;
+    name: string;
+    description?: string;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+    storageProvider: StorageProvider;
+    isPublic: boolean;
+    expiresAt?: string;
+    uploadedBy: {
+        id: string;
+        name: string;
+    };
+    createdAt: string;
+    updatedAt: string;
+}
+interface DocumentListParams {
+    page?: number;
+    limit?: number;
+    patientId?: string;
+    appointmentId?: string;
+    category?: DocumentCategory;
+    type?: string;
+    startDate?: string;
+    endDate?: string;
+    search?: string;
+}
+interface DocumentListResponse {
+    items: Document[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+interface DocumentCreateRequest {
+    patientId?: string;
+    appointmentId?: string;
+    category: DocumentCategory;
+    type: string;
+    name: string;
+    description?: string;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+}
+interface DocumentUpdateRequest {
+    category?: DocumentCategory;
+    type?: string;
+    name?: string;
+    description?: string;
+    isPublic?: boolean;
+}
+interface DocumentAudit {
+    id: string;
+    documentId: string;
+    action: DocumentAction;
+    changes?: Record<string, unknown>;
+    performedBy: string;
+    performedAt: string;
+}
+interface StorageOptions {
+    contentType: string;
+    maxAge?: number;
+}
+interface StoredFile {
+    key: string;
+    url: string;
+    size: number;
+    contentType: string;
+}
+
+type TaskStatus = 'pending' | 'in_progress' | 'completed';
+type TaskPriority = 'low' | 'medium' | 'high';
+type TaskAction = 'create' | 'update' | 'status_change' | 'delete';
+interface Task {
+    id: string;
+    organizationId: string;
+    patientId?: string;
+    appointmentId?: string;
+    title: string;
+    description?: string;
+    status: TaskStatus;
+    priority: TaskPriority;
+    assignedTo?: {
+        id: string;
+        name: string;
+    } | null;
+    dueDate?: string;
+    completedAt?: string;
+    createdBy: {
+        id: string;
+        name: string;
+    };
+    createdAt: string;
+    updatedAt: string;
+}
+interface TaskListParams {
+    page?: number;
+    limit?: number;
+    status?: TaskStatus;
+    priority?: TaskPriority;
+    assignedTo?: string;
+    patientId?: string;
+    appointmentId?: string;
+    dueDateFrom?: string;
+    dueDateTo?: string;
+    search?: string;
+}
+interface TaskListResponse {
+    items: Task[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+interface TaskCreateRequest {
+    title: string;
+    description?: string;
+    patientId?: string;
+    appointmentId?: string;
+    priority?: TaskPriority;
+    assignedTo?: string;
+    dueDate?: string;
+}
+interface TaskUpdateRequest {
+    title?: string;
+    description?: string;
+    priority?: TaskPriority;
+    assignedTo?: string;
+    dueDate?: string;
+    status?: TaskStatus;
+}
+interface TaskStatusUpdateRequest {
+    status: TaskStatus;
+}
+interface TaskComment {
+    id: string;
+    taskId: string;
+    userId: string;
+    user: {
+        id: string;
+        name: string;
+    };
+    content: string;
+    createdAt: string;
+}
+interface TaskCommentCreateRequest {
+    content: string;
 }
 
 interface BaseEntity {
@@ -345,4 +693,4 @@ interface PaginatedResponse<T> {
     pagination: Pagination;
 }
 
-export type { ApiError, ApiResponse, AppointmentCancelRequest, AppointmentCreateRequest, AppointmentListParams, AppointmentListResponse, AppointmentRescheduleRequest, AppointmentUpdateRequest, AuthUser, AvailabilityResponse, BaseEntity, CalendarResponse, ForgotPasswordRequest, LoginRequest, LoginResponse, LogoutResponse, Organization, PaginatedResponse, Pagination, PatientContactCreateRequest, PatientContactUpdateRequest, PatientCreateRequest, PatientListParams, PatientListResponse, PatientUpdateRequest, Permission, Professional, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest, ResetPasswordRequest, Role, ScheduleBlock, ScheduleBlockCreateRequest, TokenPayload, User };
+export type { ApiError, ApiResponse, Appointment, AppointmentCancelRequest, AppointmentCreateRequest, AppointmentListParams, AppointmentListResponse, AppointmentRescheduleRequest, AppointmentStatus, AppointmentType, AppointmentTypeBasic, AppointmentUpdateRequest, AuthUser, AvailabilityResponse, BaseEntity, CalendarDay, CalendarResponse, CalendarSlot, Communication, CommunicationAudit, CommunicationCreateRequest, CommunicationListParams, CommunicationListResponse, CommunicationStatus, Document, DocumentAction, DocumentAudit, DocumentCategory, DocumentCreateRequest, DocumentListParams, DocumentListResponse, DocumentUpdateRequest, ForgotPasswordRequest, IMessageProvider, JobStatus, JobType, LoginRequest, LoginResponse, LogoutResponse, MessageChannel, MessageJob, MessageJobListParams, MessageJobListResponse, MessageTemplate, MessageTemplateCreateRequest, MessageTemplateListParams, MessageTemplateListResponse, MessageTemplateUpdateRequest, MessageType, Organization, PaginatedResponse, Pagination, Patient, PatientAudit, PatientBasic, PatientContact, PatientContactCreateRequest, PatientContactUpdateRequest, PatientCreateRequest, PatientListParams, PatientListResponse, PatientUpdateRequest, Permission, Professional, ProfessionalBasic, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest, ResetPasswordRequest, Role, ScheduleBlock, ScheduleBlockCreateRequest, SendParams, SendResult, StorageOptions, StorageProvider, StoredFile, Task, TaskAction, TaskComment, TaskCommentCreateRequest, TaskCreateRequest, TaskListParams, TaskListResponse, TaskPriority, TaskStatus, TaskStatusUpdateRequest, TaskUpdateRequest, TokenPayload, User, WaitingList };
