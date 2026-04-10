@@ -9,6 +9,8 @@ import { PatientsModule } from './modules/patients/patients.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { ProfessionalsModule } from './modules/professionals/professionals.module';
 import { ScheduleBlocksModule } from './modules/schedule-blocks/schedule-blocks.module';
+import { TemplatesModule } from './modules/templates/templates.module';
+import { CommunicationsModule } from './modules/communications/communications.module';
 import { PrismaModule } from './common/prisma.module';
 import { SeedService } from './common/seed.service';
 
@@ -28,6 +30,8 @@ import { SeedService } from './common/seed.service';
     AppointmentsModule,
     ProfessionalsModule,
     ScheduleBlocksModule,
+    TemplatesModule,
+    CommunicationsModule,
   ],
   providers: [SeedService],
 })

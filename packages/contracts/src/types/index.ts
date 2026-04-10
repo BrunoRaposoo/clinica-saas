@@ -5,27 +5,31 @@ export interface BaseEntity {
 }
 
 export * from './auth';
+export * from './patient';
+export * from './appointment';
 export type {
-  PatientListParams,
-  PatientListResponse,
-  PatientCreateRequest,
-  PatientUpdateRequest,
-  PatientContactCreateRequest,
-  PatientContactUpdateRequest,
-} from './patient';
-export type {
-  AppointmentListParams,
-  AppointmentListResponse,
-  AppointmentCreateRequest,
-  AppointmentUpdateRequest,
-  AppointmentCancelRequest,
-  AppointmentRescheduleRequest,
-  CalendarResponse,
-  AvailabilityResponse,
-  Professional,
-  ScheduleBlock,
-  ScheduleBlockCreateRequest,
-} from './appointment';
+  MessageTemplate,
+  MessageTemplateListParams,
+  MessageTemplateListResponse,
+  MessageTemplateCreateRequest,
+  MessageTemplateUpdateRequest,
+  Communication,
+  CommunicationListParams,
+  CommunicationListResponse,
+  CommunicationCreateRequest,
+  CommunicationAudit,
+  MessageJob,
+  MessageJobListParams,
+  MessageJobListResponse,
+  MessageChannel,
+  MessageType,
+  CommunicationStatus,
+  JobType,
+  JobStatus,
+  IMessageProvider,
+  SendParams,
+  SendResult,
+} from './communication';
 
 export interface Organization extends BaseEntity {
   name: string;

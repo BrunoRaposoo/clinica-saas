@@ -110,12 +110,3 @@ export const PatientAuditSchema = z.object({
   performedBy: z.string().uuid(),
   performedAt: z.string().datetime(),
 });
-
-export type Patient = z.infer<typeof PatientSchema>;
-export type PatientCreate = z.infer<typeof PatientCreateSchema>;
-export type PatientUpdate = z.infer<typeof PatientUpdateSchema>;
-export type PatientContact = z.infer<typeof PatientContactSchema>;
-export type PatientContactCreate = z.infer<typeof PatientContactCreateSchema>;
-export type PatientContactUpdate = z.infer<typeof PatientContactUpdateSchema>;
-export type PatientListParams = z.infer<typeof PatientListParamsSchema>;
-export type PatientAudit = z.infer<typeof PatientAuditSchema>;

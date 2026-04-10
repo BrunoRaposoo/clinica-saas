@@ -146,22 +146,11 @@ export const CalendarResponseSchema = z.object({
 export const AvailabilityResponseSchema = z.object({
   date: z.string(),
   availableSlots: z.array(z.string()),
-  blockedSlots: z.array(z.object({
-    start: z.string(),
-    end: z.string(),
-    reason: z.string(),
-  })),
+  blockedSlots: z.array(
+    z.object({
+      start: z.string(),
+      end: z.string(),
+      reason: z.string(),
+    })
+  ),
 });
-
-export type Appointment = z.infer<typeof AppointmentSchema>;
-export type AppointmentCreate = z.infer<typeof AppointmentCreateSchema>;
-export type AppointmentUpdate = z.infer<typeof AppointmentUpdateSchema>;
-export type AppointmentCancel = z.infer<typeof AppointmentCancelSchema>;
-export type AppointmentReschedule = z.infer<typeof AppointmentRescheduleSchema>;
-export type AppointmentListParams = z.infer<typeof AppointmentListParamsSchema>;
-export type Professional = z.infer<typeof ProfessionalSchema>;
-export type ScheduleBlock = z.infer<typeof ScheduleBlockSchema>;
-export type ScheduleBlockCreate = z.infer<typeof ScheduleBlockCreateSchema>;
-export type CalendarResponse = z.infer<typeof CalendarResponseSchema>;
-export type AvailabilityResponse = z.infer<typeof AvailabilityResponseSchema>;
-export type AppointmentStatus = z.infer<typeof AppointmentStatusEnum>;
