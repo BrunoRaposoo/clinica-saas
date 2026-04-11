@@ -4,6 +4,7 @@ export interface BaseEntity {
   updatedAt: Date;
 }
 
+export * from './dashboard';
 export * from './auth';
 export * from './patient';
 export * from './appointment';
