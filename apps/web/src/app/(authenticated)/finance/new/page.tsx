@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { financeApi } from '@/lib/api/finance';
+import { patientsApi } from '@/lib/api/patients';
+import { appointmentsApi } from '@/lib/api/appointments';
 import { PaymentMethod } from '@clinica-saas/contracts';
 
 export default function NewChargePage() {
@@ -15,6 +17,27 @@ export default function NewChargePage() {
     patientId: '',
     appointmentId: '',
     notes: '',
+  });
+
+  const [patientSearch, setPatientSearch] = useState('');
+
+  const { data: patientsData } = useQuery({
+    queryKey: ['patients-search', patientSearch],
+    queryFn: () => patientsApi.getPatients({ 
+      search: patientSearch || undefined,
+      limit: 50 
+    }),
+    enabled: true,
+  });
+
+  const { data: appointmentsData } = useQuery({
+    queryKey: ['appointments-search', formData.patientId],
+    queryFn: () => appointmentsApi.getAppointments({ 
+      patientId: formData.patientId || undefined,
+      limit: 50,
+      status: 'scheduled',
+    }),
+    enabled: !!formData.patientId,
   });
 
   const createCharge = useMutation({
@@ -34,6 +57,20 @@ export default function NewChargePage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createCharge.mutate(formData);
+  };
+
+  const handlePatientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const patientId = e.target.value;
+    setFormData({ 
+      ...formData, 
+      patientId, 
+      appointmentId: '' 
+    });
+    setPatientSearch('');
+  };
+
+  const handleAppointmentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormData({ ...formData, appointmentId: e.target.value });
   };
 
   return (
@@ -81,25 +118,43 @@ export default function NewChargePage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Vincular Paciente (ID)</label>
+          <label className="block text-sm font-medium mb-1">Vincular Paciente</label>
+          <select
+            value={formData.patientId}
+            onChange={handlePatientChange}
+            className="w-full px-3 py-2 border rounded"
+          >
+            <option value="">Selecione um paciente</option>
+            {patientsData?.items?.map((patient: any) => (
+              <option key={patient.id} value={patient.id}>
+                {patient.name} {patient.document ? `(${patient.document})` : ''}
+              </option>
+            ))}
+          </select>
           <input
             type="text"
-            value={formData.patientId}
-            onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}
-            className="w-full px-3 py-2 border rounded"
-            placeholder="uuid"
+            placeholder="Buscar paciente..."
+            value={patientSearch}
+            onChange={(e) => setPatientSearch(e.target.value)}
+            className="w-full mt-2 px-3 py-2 border rounded text-sm"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Vincular Agendamento (ID)</label>
-          <input
-            type="text"
+          <label className="block text-sm font-medium mb-1">Vincular Agendamento</label>
+          <select
             value={formData.appointmentId}
-            onChange={(e) => setFormData({ ...formData, appointmentId: e.target.value })}
-            className="w-full px-3 py-2 border rounded"
-            placeholder="uuid"
-          />
+            onChange={handleAppointmentChange}
+            disabled={!formData.patientId}
+            className="w-full px-3 py-2 border rounded disabled:opacity-50"
+          >
+            <option value="">Selecione um agendamento</option>
+            {appointmentsData?.items?.map((apt: any) => (
+              <option key={apt.id} value={apt.id}>
+                {new Date(apt.startDate).toLocaleString('pt-BR')} - {apt.appointmentType?.name || 'Consulta'}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
