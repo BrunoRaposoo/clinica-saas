@@ -98,4 +98,13 @@ export class FinanceController {
   ): Promise<void> {
     return this.financeService.cancel(id, user.organizationId!, user.id);
   }
+
+  @Post('charges/update-overdue')
+  @ApiOperation({ summary: 'Atualizar cobranças vencidas (admin)' })
+  async updateOverdue(
+    @CurrentUser() user: any,
+  ): Promise<{ updated: number }> {
+    const count = await this.financeService.updateOverdueCharges();
+    return { updated: count };
+  }
 }

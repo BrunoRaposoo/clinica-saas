@@ -235,13 +235,21 @@ export class FinanceService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const paidWhere: any = { organizationId, status: 'paid' };
+    if (periodFrom) {
+      paidWhere.createdAt = { gte: periodFrom };
+    }
+    if (periodTo) {
+      paidWhere.createdAt = { ...paidWhere.createdAt, lte: periodTo };
+    }
+
     const [pendingResult, paidResult, overdueResult, countResult] = await Promise.all([
       this.prisma.charge.aggregate({
         where: { organizationId, status: 'pending' },
         _sum: { amount: true },
       }),
       this.prisma.charge.aggregate({
-        where: { organizationId, status: 'paid' },
+        where: paidWhere,
         _sum: { amount: true },
       }),
       this.prisma.charge.aggregate({
@@ -278,5 +286,22 @@ export class FinanceService {
       createdAt: charge.createdAt.toISOString(),
       updatedAt: charge.updatedAt.toISOString(),
     };
+  }
+
+  async updateOverdueCharges(): Promise<number> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const result = await this.prisma.charge.updateMany({
+      where: {
+        status: 'pending',
+        dueDate: { lt: today },
+      },
+      data: {
+        status: 'overdue',
+      },
+    });
+
+    return result.count;
   }
 }
