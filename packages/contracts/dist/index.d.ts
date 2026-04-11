@@ -640,6 +640,71 @@ interface TaskCommentCreateRequest {
     content: string;
 }
 
+type ChargeStatus = 'pending' | 'paid' | 'overdue' | 'cancelled';
+type PaymentMethod = 'cash' | 'credit' | 'debit' | 'pix' | 'transfer';
+type ChargeAction = 'create' | 'update' | 'payment' | 'cancel';
+interface Charge {
+    id: string;
+    organizationId: string;
+    patientId?: string;
+    appointmentId?: string;
+    description: string;
+    amount: number;
+    dueDate: string;
+    status: ChargeStatus;
+    paidAt?: string;
+    paymentMethod?: PaymentMethod;
+    notes?: string;
+    createdBy: {
+        id: string;
+        name: string;
+    };
+    createdAt: string;
+    updatedAt: string;
+}
+interface ChargeListParams {
+    page?: number;
+    limit?: number;
+    status?: ChargeStatus;
+    patientId?: string;
+    appointmentId?: string;
+    dueDateFrom?: string;
+    dueDateTo?: string;
+    search?: string;
+}
+interface ChargeListResponse {
+    items: Charge[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+interface ChargeCreateRequest {
+    description: string;
+    amount: number;
+    dueDate: string;
+    patientId?: string;
+    appointmentId?: string;
+    notes?: string;
+}
+interface ChargeUpdateRequest {
+    description?: string;
+    amount?: number;
+    dueDate?: string;
+    notes?: string;
+}
+interface ChargePaymentRequest {
+    paymentMethod: PaymentMethod;
+}
+interface FinanceDashboard {
+    totalPending: number;
+    totalPaid: number;
+    totalOverdue: number;
+    pendingCount: number;
+}
+
 interface BaseEntity {
     id: string;
     createdAt: Date;
@@ -693,4 +758,4 @@ interface PaginatedResponse<T> {
     pagination: Pagination;
 }
 
-export type { ApiError, ApiResponse, Appointment, AppointmentCancelRequest, AppointmentCreateRequest, AppointmentListParams, AppointmentListResponse, AppointmentRescheduleRequest, AppointmentStatus, AppointmentType, AppointmentTypeBasic, AppointmentUpdateRequest, AuthUser, AvailabilityResponse, BaseEntity, CalendarDay, CalendarResponse, CalendarSlot, Communication, CommunicationAudit, CommunicationCreateRequest, CommunicationListParams, CommunicationListResponse, CommunicationStatus, Document, DocumentAction, DocumentAudit, DocumentCategory, DocumentCreateRequest, DocumentListParams, DocumentListResponse, DocumentUpdateRequest, ForgotPasswordRequest, IMessageProvider, JobStatus, JobType, LoginRequest, LoginResponse, LogoutResponse, MessageChannel, MessageJob, MessageJobListParams, MessageJobListResponse, MessageTemplate, MessageTemplateCreateRequest, MessageTemplateListParams, MessageTemplateListResponse, MessageTemplateUpdateRequest, MessageType, Organization, PaginatedResponse, Pagination, Patient, PatientAudit, PatientBasic, PatientContact, PatientContactCreateRequest, PatientContactUpdateRequest, PatientCreateRequest, PatientListParams, PatientListResponse, PatientUpdateRequest, Permission, Professional, ProfessionalBasic, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest, ResetPasswordRequest, Role, ScheduleBlock, ScheduleBlockCreateRequest, SendParams, SendResult, StorageOptions, StorageProvider, StoredFile, Task, TaskAction, TaskComment, TaskCommentCreateRequest, TaskCreateRequest, TaskListParams, TaskListResponse, TaskPriority, TaskStatus, TaskStatusUpdateRequest, TaskUpdateRequest, TokenPayload, User, WaitingList };
+export type { ApiError, ApiResponse, Appointment, AppointmentCancelRequest, AppointmentCreateRequest, AppointmentListParams, AppointmentListResponse, AppointmentRescheduleRequest, AppointmentStatus, AppointmentType, AppointmentTypeBasic, AppointmentUpdateRequest, AuthUser, AvailabilityResponse, BaseEntity, CalendarDay, CalendarResponse, CalendarSlot, Charge, ChargeAction, ChargeCreateRequest, ChargeListParams, ChargeListResponse, ChargePaymentRequest, ChargeStatus, ChargeUpdateRequest, Communication, CommunicationAudit, CommunicationCreateRequest, CommunicationListParams, CommunicationListResponse, CommunicationStatus, Document, DocumentAction, DocumentAudit, DocumentCategory, DocumentCreateRequest, DocumentListParams, DocumentListResponse, DocumentUpdateRequest, FinanceDashboard, ForgotPasswordRequest, IMessageProvider, JobStatus, JobType, LoginRequest, LoginResponse, LogoutResponse, MessageChannel, MessageJob, MessageJobListParams, MessageJobListResponse, MessageTemplate, MessageTemplateCreateRequest, MessageTemplateListParams, MessageTemplateListResponse, MessageTemplateUpdateRequest, MessageType, Organization, PaginatedResponse, Pagination, Patient, PatientAudit, PatientBasic, PatientContact, PatientContactCreateRequest, PatientContactUpdateRequest, PatientCreateRequest, PatientListParams, PatientListResponse, PatientUpdateRequest, PaymentMethod, Permission, Professional, ProfessionalBasic, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest, ResetPasswordRequest, Role, ScheduleBlock, ScheduleBlockCreateRequest, SendParams, SendResult, StorageOptions, StorageProvider, StoredFile, Task, TaskAction, TaskComment, TaskCommentCreateRequest, TaskCreateRequest, TaskListParams, TaskListResponse, TaskPriority, TaskStatus, TaskStatusUpdateRequest, TaskUpdateRequest, TokenPayload, User, WaitingList };
