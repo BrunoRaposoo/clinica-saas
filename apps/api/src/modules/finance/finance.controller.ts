@@ -31,8 +31,16 @@ export class FinanceController {
 
   @Get('dashboard')
   @ApiOperation({ summary: 'Dashboard financeiro' })
-  async getDashboard(@CurrentUser() user: any): Promise<FinanceDashboard> {
-    return this.financeService.getDashboard(user.organizationId!);
+  async getDashboard(
+    @Query('periodFrom') periodFrom?: string,
+    @Query('periodTo') periodTo?: string,
+    @CurrentUser() user?: any,
+  ): Promise<FinanceDashboard> {
+    return this.financeService.getDashboard(
+      user.organizationId!, 
+      periodFrom ? new Date(periodFrom) : undefined,
+      periodTo ? new Date(periodTo) : undefined
+    );
   }
 
   @Get('charges')

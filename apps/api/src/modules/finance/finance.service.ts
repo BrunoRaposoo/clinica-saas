@@ -231,7 +231,7 @@ export class FinanceService {
     });
   }
 
-  async getDashboard(organizationId: string): Promise<FinanceDashboard> {
+  async getDashboard(organizationId: string, periodFrom?: Date, periodTo?: Date): Promise<FinanceDashboard> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 

@@ -11,8 +11,11 @@ import {
 const BASE_URL = '/finance';
 
 export const financeApi = {
-  getDashboard: async (): Promise<FinanceDashboard> => {
-    const response = await fetch(`${BASE_URL}/dashboard`);
+  getDashboard: async (periodFrom?: string, periodTo?: string): Promise<FinanceDashboard> => {
+    const params = new URLSearchParams();
+    if (periodFrom) params.set('periodFrom', periodFrom);
+    if (periodTo) params.set('periodTo', periodTo);
+    const response = await fetch(`${BASE_URL}/dashboard?${params}`);
     if (!response.ok) throw new Error('Failed to fetch dashboard');
     return response.json();
   },

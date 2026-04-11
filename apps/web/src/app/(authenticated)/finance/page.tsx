@@ -26,10 +26,12 @@ export default function FinancePage() {
   const [search, setSearch] = useState('');
   const [patientFilter, setPatientFilter] = useState<string>('');
   const [page, setPage] = useState(1);
+  const [periodFrom, setPeriodFrom] = useState('');
+  const [periodTo, setPeriodTo] = useState('');
 
   const { data: dashboard, isLoading: loadingDashboard } = useQuery({
-    queryKey: ['finance-dashboard'],
-    queryFn: () => financeApi.getDashboard(),
+    queryKey: ['finance-dashboard', periodFrom, periodTo],
+    queryFn: () => financeApi.getDashboard(periodFrom || undefined, periodTo || undefined),
   });
 
   const { data: patients } = useQuery({
@@ -100,6 +102,34 @@ export default function FinancePage() {
             )}
           </p>
         </div>
+      </div>
+
+      {/* Period Filter */}
+      <div className="flex gap-4 mb-4 items-end">
+        <div>
+          <label className="block text-sm text-gray-500 mb-1">Período De</label>
+          <input
+            type="date"
+            value={periodFrom}
+            onChange={(e) => setPeriodFrom(e.target.value)}
+            className="px-3 py-2 border rounded"
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-500 mb-1">Período Até</label>
+          <input
+            type="date"
+            value={periodTo}
+            onChange={(e) => setPeriodTo(e.target.value)}
+            className="px-3 py-2 border rounded"
+          />
+        </div>
+        <button
+          onClick={() => { setPeriodFrom(''); setPeriodTo(''); }}
+          className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
+        >
+          Limpar período
+        </button>
       </div>
 
       {/* Filters */}
