@@ -394,6 +394,6 @@ apps/web/src/
 
 ---
 
-**Versão**: 1.0.0
-**Data**: 2026-04-10
-**Status**: Rascunho para validação
+**Versão**: 1.0.1
+**Data**: 2026-04-08
+**Status**: Implementado

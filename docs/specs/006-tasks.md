@@ -340,6 +340,6 @@ packages/contracts/src/types/
 
 ---
 
-**Versão**: 1.0.0
+**Versão**: 1.0.1
 **Data**: 2026-04-10
-**Status**: Aprovado para implementação
+**Status**: Implementado

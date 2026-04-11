@@ -232,15 +232,23 @@ packages/contracts/src/types/
 
 ## 11. Critérios de Aceite
 
-- [ ] Dashboard com indicadores
-- [ ] CRUD completo de cobranças
-- [ ] Registro de pagamento
-- [ ] Filtros funcionado
-- [ ] Build compila
-- [ ] Isolamento org
+- [x] Dashboard com indicadores
+- [x] CRUD completo de cobranças
+- [x] Registro de pagamento
+- [x] Filtros funcionado
+- [x] Build compila
+- [x] Isolamento org
 
 ---
 
-**Versão**: 1.0.0
+**Versão**: 1.0.1
 **Data**: 2026-04-11
-**Status**: Aprovado para implementação
+**Status**: Implementado com gaps corrigidos
+
+## Updates (v1.0.1)
+- Gap 2: Paginação funcional ✅
+- Gap 5: Filtro de paciente na listagem ✅
+- Gap 3: Dropdowns de seleção ✅
+- Gap 4: Filtro de período no dashboard ✅
+- Gap 1: Método para atualizar overdue (manual) ✅
+  - TODO: Automatizar com @nestjs/schedule (docs/TODO.md)
