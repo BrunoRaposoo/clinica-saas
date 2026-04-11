@@ -30,6 +30,7 @@ model Organization {
   messageJobs      MessageJob[]
   documents        Document[]
   tasks           Task[]
+  charges        Charge[]
 
   @@index([isActive])
   @@map("organizations")
@@ -62,6 +63,8 @@ model User {
   createdTasks    Task[]         @relation("CreatedTasks")
   taskComments    TaskComment[]
   taskAudits     TaskAudit[]
+  createdCharges Charge[]
+  chargeAudits   ChargeAudit[]
 
   @@index([email])
   @@index([organizationId])
@@ -166,6 +169,7 @@ model Patient {
   communications Communication[]
   documents    Document[]
   tasks       Task[]
+  charges    Charge[]
 
   @@index([organizationId])
   @@index([name])
@@ -281,6 +285,7 @@ model Appointment {
   messageJobs    MessageJob[]
   documents      Document[]
   tasks         Task[]
+  charges       Charge[]
 
   @@index([organizationId])
   @@index([startDate])
@@ -560,4 +565,51 @@ model TaskAudit {
   @@index([taskId])
   @@index([performedBy])
   @@map("task_audits")
+}
+
+model Charge {
+  id              String    @id @default(uuid())
+  organizationId  String
+  patientId       String?
+  appointmentId  String?
+  description     String
+  amount          Decimal   @db.Decimal(10, 2)
+  dueDate         DateTime
+  status          String   @default("pending")
+  paidAt          DateTime?
+  paymentMethod   String?
+  notes           String?
+  createdBy       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  patient       Patient?        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointment   Appointment?   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  createdByUser User           @relation(fields: [createdBy], references: [id])
+  audits        ChargeAudit[]
+
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([appointmentId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([createdBy])
+  @@map("charges")
+}
+
+model ChargeAudit {
+  id          String   @id @default(uuid())
+  chargeId    String
+  action      String
+  changes     Json?
+  performedBy String
+  performedAt DateTime @default(now())
+
+  charge  Charge @relation(fields: [chargeId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [performedBy], references: [id])
+
+  @@index([chargeId])
+  @@index([performedBy])
+  @@map("charge_audits")
 }
