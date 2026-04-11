@@ -13,6 +13,7 @@ import { TemplatesModule } from './modules/templates/templates.module';
 import { CommunicationsModule } from './modules/communications/communications.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { FinanceModule } from './modules/finance/finance.module';
 import { PrismaModule } from './common/prisma.module';
 import { SeedService } from './common/seed.service';
 
@@ -34,8 +35,9 @@ import { SeedService } from './common/seed.service';
     ScheduleBlocksModule,
     TemplatesModule,
     CommunicationsModule,
-    DocumentsModule,
+DocumentsModule,
     TasksModule,
+    FinanceModule,
   ],
   providers: [SeedService],
 })
