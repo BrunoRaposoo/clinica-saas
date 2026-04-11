@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { financeApi } from '@/lib/api/finance';
+import { patientsApi } from '@/lib/api/patients';
 import { ChargeStatus } from '@clinica-saas/contracts';
 import Link from 'next/link';
 
@@ -23,22 +24,36 @@ const statusLabels: Record<ChargeStatus, string> = {
 export default function FinancePage() {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [search, setSearch] = useState('');
+  const [patientFilter, setPatientFilter] = useState<string>('');
+  const [page, setPage] = useState(1);
 
   const { data: dashboard, isLoading: loadingDashboard } = useQuery({
     queryKey: ['finance-dashboard'],
     queryFn: () => financeApi.getDashboard(),
   });
 
+  const { data: patients } = useQuery({
+    queryKey: ['patients-select'],
+    queryFn: () => patientsApi.getPatients({ limit: 1000 }),
+  });
+
   const { data: charges, isLoading: loadingCharges } = useQuery({
-    queryKey: ['charges', statusFilter, search],
+    queryKey: ['charges', statusFilter, search, patientFilter, page],
     queryFn: () => financeApi.listCharges({
       status: statusFilter as ChargeStatus || undefined,
       search: search || undefined,
+      patientId: patientFilter || undefined,
+      page,
+      limit: 20,
     }),
   });
 
   const formatCurrency = (value: number) => 
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
 
   if (loadingDashboard) return <div className="p-6">Carregando...</div>;
 
@@ -88,10 +103,10 @@ export default function FinancePage() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 mb-4">
+      <div className="flex gap-4 mb-4 flex-wrap">
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
           className="px-3 py-2 border rounded"
         >
           <option value="">Todos os status</option>
@@ -100,11 +115,25 @@ export default function FinancePage() {
           <option value="overdue">Vencido</option>
           <option value="cancelled">Cancelado</option>
         </select>
+        
+        <select
+          value={patientFilter}
+          onChange={(e) => { setPatientFilter(e.target.value); setPage(1); }}
+          className="px-3 py-2 border rounded min-w-[200px]"
+        >
+          <option value="">Todos os pacientes</option>
+          {patients?.items?.map((patient: any) => (
+            <option key={patient.id} value={patient.id}>
+              {patient.name}
+            </option>
+          ))}
+        </select>
+        
         <input
           type="text"
           placeholder="Buscar..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           className="px-3 py-2 border rounded max-w-xs"
         />
       </div>
@@ -164,16 +193,32 @@ export default function FinancePage() {
 
       {/* Pagination */}
       {charges && charges.pagination.totalPages > 1 && (
-        <div className="mt-4 flex justify-center gap-2">
-          {Array.from({ length: charges.pagination.totalPages }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => {}}
-              className="px-3 py-1 border rounded"
-            >
-              {i + 1}
-            </button>
-          ))}
+        <div className="mt-4 flex justify-center items-center gap-2">
+          <button
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 1}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          <div className="flex gap-1">
+            {Array.from({ length: charges.pagination.totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => handlePageChange(i + 1)}
+                className={`px-3 py-1 border rounded ${page === i + 1 ? 'bg-blue-600 text-white' : ''}`}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page === charges.pagination.totalPages}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Próxima
+          </button>
         </div>
       )}
     </div>
