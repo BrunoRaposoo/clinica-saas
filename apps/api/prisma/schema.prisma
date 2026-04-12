@@ -37,6 +37,8 @@ model Organization {
   schedulePreferences  SchedulePreferences?
   communicationPreferences CommunicationPreferences?
   auditLogs           AuditLog[]
+  integrations       Integration[]
+  automations        Automation[]
 
   @@index([isActive])
   @@map("organizations")
@@ -742,4 +744,70 @@ model AuditLog {
   @@index([entity])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+model Integration {
+  id              String    @id @default(uuid())
+  organizationId  String
+  provider        String
+  providerConfig Json?
+  credentials     Json?
+  isActive        Boolean   @default(true)
+  lastSyncAt      DateTime?
+  status          String    @default("disconnected")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  organization    Organization   @relation(fields: [organizationId], references: [id])
+  logs            IntegrationLog[]
+
+  @@index([organizationId])
+  @@index([provider])
+  @@index([status])
+  @@map("integrations")
+}
+
+model IntegrationLog {
+  id               String    @id @default(uuid())
+  integrationId     String
+  event            String
+  status           String
+  errorMessage     String?
+  requestPayload   Json?
+  responsePayload  Json?
+  createdAt        DateTime  @default(now())
+
+  integration      Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@index([integrationId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("integration_logs")
+}
+
+model Automation {
+  id              String    @id @default(uuid())
+  organizationId  String
+  name            String
+  event           String
+  action          String
+  config          Json
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([event])
+  @@index([isActive])
+  @@map("automations")
+}
+
+model IdempotencyKey {
+  key       String    @id
+  result   Json
+  expiresAt DateTime?
+
+  @@map("idempotency_keys")
 }

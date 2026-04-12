@@ -10,6 +10,9 @@ export const QUEUE_NAMES = {
   REMINDER: 'notification:reminder',
   CONFIRMATION: 'notification:confirmation',
   CANCELLATION: 'notification:cancellation',
+  EMAIL: 'integration:email',
+  WHATSAPP: 'integration:whatsapp',
+  AUTOMATION: 'automation:trigger',
 } as const;
 
 @Injectable()
@@ -48,14 +51,44 @@ export class NotificationQueueService {
     return this.queues.get(QUEUE_NAMES.CANCELLATION)!;
   }
 
-  private createQueue(name: string): Queue {
+  getEmailQueue(): Queue {
+    if (!this.queues.has(QUEUE_NAMES.EMAIL)) {
+      this.queues.set(
+        QUEUE_NAMES.EMAIL,
+        this.createQueue(QUEUE_NAMES.EMAIL),
+      );
+    }
+    return this.queues.get(QUEUE_NAMES.EMAIL)!;
+  }
+
+  getWhatsAppQueue(): Queue {
+    if (!this.queues.has(QUEUE_NAMES.WHATSAPP)) {
+      this.queues.set(
+        QUEUE_NAMES.WHATSAPP,
+        this.createQueue(QUEUE_NAMES.WHATSAPP),
+      );
+    }
+    return this.queues.get(QUEUE_NAMES.WHATSAPP)!;
+  }
+
+  getAutomationQueue(): Queue {
+    if (!this.queues.has(QUEUE_NAMES.AUTOMATION)) {
+      this.queues.set(
+        QUEUE_NAMES.AUTOMATION,
+        this.createQueue(QUEUE_NAMES.AUTOMATION, { attempts: 2, backoff: { type: 'exponential', delay: 2000 } }),
+      );
+    }
+    return this.queues.get(QUEUE_NAMES.AUTOMATION)!;
+  }
+
+  private createQueue(name: string, jobOptions?: { attempts: number; backoff: { type: string; delay: number } }): Queue {
     const options: QueueOptions = {
       connection: this.getConnection(),
       defaultJobOptions: {
-        attempts: 3,
+        attempts: jobOptions?.attempts ?? 3,
         backoff: {
-          type: 'exponential',
-          delay: 5000,
+          type: jobOptions?.backoff.type ?? 'exponential',
+          delay: jobOptions?.backoff.delay ?? 5000,
         },
         removeOnComplete: {
           count: 1000,
