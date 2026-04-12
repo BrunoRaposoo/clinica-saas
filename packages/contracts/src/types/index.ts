@@ -5,6 +5,7 @@ export interface BaseEntity {
 }
 
 export * from './dashboard';
+export * from './integration';
 export * from './auth';
 export * from './patient';
 export * from './appointment';

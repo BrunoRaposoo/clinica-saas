@@ -47,8 +47,8 @@ export class CancellationProcessor {
       }
 
       const contact = channel === 'EMAIL'
-        ? appointment.patient.contacts.find((c) => c.isPrimary && c.email)
-        : appointment.patient.contacts.find((c) => c.isPrimary && c.phone);
+        ? appointment.patient.contacts.find((c: any) => c.isPrimary && c.email)
+        : appointment.patient.contacts.find((c: any) => c.isPrimary && c.phone);
 
       const recipient = channel === 'EMAIL' ? contact?.email : contact?.phone;
 

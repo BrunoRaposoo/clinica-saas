@@ -27,7 +27,9 @@
     "db:migrate": "npm run prisma:migrate -w @clinica-saas/api"
   },
   "devDependencies": {
+    "@prisma/client": "^7.7.0",
     "@types/node": "^20.11.0",
+    "prisma": "^7.7.0",
     "typescript": "^5.3.3"
   },
   "engines": {
