@@ -1,0 +1,283 @@
+const BASE_URL = '/settings';
+
+export interface OrganizationSettings {
+  id: string;
+  organizationId: string;
+  businessName: string;
+  tradeName?: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  timezone: string;
+  locale: string;
+  currency: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Unit {
+  id: string;
+  organizationId: string;
+  name: string;
+  address?: string;
+  phone?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ServiceType {
+  id: string;
+  organizationId: string;
+  name: string;
+  description?: string;
+  duration: number;
+  price?: number;
+  color?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Professional {
+  id: string;
+  organizationId: string;
+  userId: string;
+  user: { id: string; name: string; email: string };
+  specialty?: string;
+  registerNumber?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SchedulePreferences {
+  id: string;
+  organizationId: string;
+  defaultDuration: number;
+  minInterval: number;
+  maxAdvanceDays: number;
+  allowOverbooking: boolean;
+  requireConfirmation: boolean;
+  startWorkHour: string;
+  endWorkHour: string;
+  workDays: number[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommunicationPreferences {
+  id: string;
+  organizationId: string;
+  defaultChannel: string;
+  sendAppointmentReminder: boolean;
+  reminderHoursBefore: number;
+  sendPaymentReminder: boolean;
+  reminderDaysBefore: number;
+  defaultEmailTemplate?: string;
+  defaultSmsTemplate?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AuditLog {
+  id: string;
+  organizationId: string;
+  userId: string;
+  user: { id: string; name: string };
+  action: string;
+  entity: string;
+  entityId?: string;
+  changes?: { before: Record<string, unknown>; after: Record<string, unknown> };
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: string;
+}
+
+export const settingsApi = {
+  getSettings: async (): Promise<OrganizationSettings> => {
+    const response = await fetch(BASE_URL);
+    if (!response.ok) throw new Error('Failed to fetch settings');
+    return response.json();
+  },
+
+  updateSettings: async (data: Partial<OrganizationSettings>): Promise<OrganizationSettings> => {
+    const response = await fetch(BASE_URL, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to update settings');
+    return response.json();
+  },
+
+  listUnits: async (params?: { page?: number; limit?: number; isActive?: boolean }): Promise<{ items: Unit[]; pagination: any }> => {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', String(params.page));
+    if (params?.limit) searchParams.set('limit', String(params.limit));
+    if (params?.isActive !== undefined) searchParams.set('isActive', String(params.isActive));
+    const response = await fetch(`${BASE_URL}/units?${searchParams}`);
+    if (!response.ok) throw new Error('Failed to fetch units');
+    return response.json();
+  },
+
+  createUnit: async (data: { name: string; address?: string; phone?: string }): Promise<Unit> => {
+    const response = await fetch(`${BASE_URL}/units`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to create unit');
+    return response.json();
+  },
+
+  updateUnit: async (id: string, data: Partial<Unit>): Promise<Unit> => {
+    const response = await fetch(`${BASE_URL}/units/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to update unit');
+    return response.json();
+  },
+
+  deleteUnit: async (id: string): Promise<void> => {
+    const response = await fetch(`${BASE_URL}/units/${id}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error('Failed to delete unit');
+  },
+
+  listServiceTypes: async (params?: { page?: number; limit?: number; isActive?: boolean }): Promise<{ items: ServiceType[]; pagination: any }> => {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', String(params.page));
+    if (params?.limit) searchParams.set('limit', String(params.limit));
+    if (params?.isActive !== undefined) searchParams.set('isActive', String(params.isActive));
+    const response = await fetch(`${BASE_URL}/service-types?${searchParams}`);
+    if (!response.ok) throw new Error('Failed to fetch service types');
+    return response.json();
+  },
+
+  createServiceType: async (data: { name: string; description?: string; duration: number; price?: string; color?: string }): Promise<ServiceType> => {
+    const response = await fetch(`${BASE_URL}/service-types`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to create service type');
+    return response.json();
+  },
+
+  updateServiceType: async (id: string, data: Partial<ServiceType>): Promise<ServiceType> => {
+    const response = await fetch(`${BASE_URL}/service-types/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to update service type');
+    return response.json();
+  },
+
+  deleteServiceType: async (id: string): Promise<void> => {
+    const response = await fetch(`${BASE_URL}/service-types/${id}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error('Failed to delete service type');
+  },
+
+  listProfessionals: async (params?: { page?: number; limit?: number; isActive?: boolean }): Promise<{ items: Professional[]; pagination: any }> => {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', String(params.page));
+    if (params?.limit) searchParams.set('limit', String(params.limit));
+    if (params?.isActive !== undefined) searchParams.set('isActive', String(params.isActive));
+    const response = await fetch(`${BASE_URL}/professionals?${searchParams}`);
+    if (!response.ok) throw new Error('Failed to fetch professionals');
+    return response.json();
+  },
+
+  createProfessional: async (data: { userId: string; specialty?: string; registerNumber?: string }): Promise<Professional> => {
+    const response = await fetch(`${BASE_URL}/professionals`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to create professional');
+    return response.json();
+  },
+
+  updateProfessional: async (id: string, data: Partial<Professional>): Promise<Professional> => {
+    const response = await fetch(`${BASE_URL}/professionals/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to update professional');
+    return response.json();
+  },
+
+  deleteProfessional: async (id: string): Promise<void> => {
+    const response = await fetch(`${BASE_URL}/professionals/${id}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error('Failed to delete professional');
+  },
+
+  getSchedulePreferences: async (): Promise<SchedulePreferences> => {
+    const response = await fetch(`${BASE_URL}/schedule-preferences`);
+    if (!response.ok) throw new Error('Failed to fetch schedule preferences');
+    return response.json();
+  },
+
+  updateSchedulePreferences: async (data: Partial<SchedulePreferences>): Promise<SchedulePreferences> => {
+    const response = await fetch(`${BASE_URL}/schedule-preferences`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to update schedule preferences');
+    return response.json();
+  },
+
+  getCommunicationPreferences: async (): Promise<CommunicationPreferences> => {
+    const response = await fetch(`${BASE_URL}/communication-preferences`);
+    if (!response.ok) throw new Error('Failed to fetch communication preferences');
+    return response.json();
+  },
+
+  updateCommunicationPreferences: async (data: Partial<CommunicationPreferences>): Promise<CommunicationPreferences> => {
+    const response = await fetch(`${BASE_URL}/communication-preferences`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to update communication preferences');
+    return response.json();
+  },
+};
+
+export const auditApi = {
+  listLogs: async (params?: {
+    page?: number;
+    limit?: number;
+    userId?: string;
+    action?: string;
+    entity?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<{ items: AuditLog[]; pagination: any }> => {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', String(params.page));
+    if (params?.limit) searchParams.set('limit', String(params.limit));
+    if (params?.userId) searchParams.set('userId', params.userId);
+    if (params?.action) searchParams.set('action', params.action);
+    if (params?.entity) searchParams.set('entity', params.entity);
+    if (params?.startDate) searchParams.set('startDate', params.startDate);
+    if (params?.endDate) searchParams.set('endDate', params.endDate);
+    const response = await fetch(`/audit/logs?${searchParams}`);
+    if (!response.ok) throw new Error('Failed to fetch audit logs');
+    return response.json();
+  },
+
+  getLog: async (id: string): Promise<AuditLog> => {
+    const response = await fetch(`/audit/logs/${id}`);
+    if (!response.ok) throw new Error('Failed to fetch audit log');
+    return response.json();
+  },
+};

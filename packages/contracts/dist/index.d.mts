@@ -1,6 +1,73 @@
 export { ApiResponseSchema, AppointmentSchema, AuthUserResponse, AuthUserResponseSchema, ForgotPasswordInput, ForgotPasswordSchema, LoginInput, LoginResponsePayload, LoginResponseSchema, LoginSchema, MessageStatus, OrganizationSchema, PaginatedResponseSchema, PaginationSchema, PatientSchema, PaymentStatus, PermissionSchema, ProfessionalSchema, ProfessionalSpecialty, RefreshTokenInput, RefreshTokenResponsePayload, RefreshTokenResponseSchema, RefreshTokenSchema, RegisterInput, RegisterSchema, ResetPasswordInput, ResetPasswordSchema, RoleSchema, SystemRole, UserRole, UserSchema } from './zod.mjs';
 import 'zod';
 
+type PeriodType = 'today' | 'yesterday' | 'current_month' | 'previous_month' | 'current_semester' | 'current_year' | 'custom';
+interface DashboardPeriod {
+    start: Date;
+    end: Date;
+    comparisonStart?: Date;
+    comparisonEnd?: Date;
+}
+interface DashboardKPI {
+    value: number;
+    previousValue: number;
+    delta: number;
+    deltaPercent: number;
+    trend: 'up' | 'down' | 'stable';
+}
+interface FinanceKPIs {
+    totalRevenue: DashboardKPI;
+    pending: DashboardKPI;
+    overdue: DashboardKPI;
+    paid: DashboardKPI;
+    averageCharge: DashboardKPI;
+}
+interface ScheduleKPIs {
+    total: DashboardKPI;
+    confirmed: DashboardKPI;
+    cancelled: DashboardKPI;
+    noShow: DashboardKPI;
+    occupancyRate: DashboardKPI;
+}
+interface PatientKPIs {
+    total: DashboardKPI;
+    newPatients: DashboardKPI;
+    active: DashboardKPI;
+    inactive: DashboardKPI;
+}
+interface CommunicationKPIs {
+    sent: DashboardKPI;
+    delivered: DashboardKPI;
+    failed: DashboardKPI;
+    deliveryRate: DashboardKPI;
+}
+interface TaskKPIs {
+    pending: DashboardKPI;
+    inProgress: DashboardKPI;
+    completed: DashboardKPI;
+    overdue: DashboardKPI;
+}
+interface DashboardSummary {
+    finance: FinanceKPIs;
+    schedule: ScheduleKPIs;
+    patients: PatientKPIs;
+    communications: CommunicationKPIs;
+    tasks: TaskKPIs;
+    period: {
+        start: string;
+        end: string;
+        comparisonStart?: string;
+        comparisonEnd?: string;
+    };
+}
+interface DrillDownParams {
+    period: PeriodType;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+    professionalId?: string;
+}
+
 interface AuthUser {
     id: string;
     email: string;
@@ -758,4 +825,4 @@ interface PaginatedResponse<T> {
     pagination: Pagination;
 }
 
-export type { ApiError, ApiResponse, Appointment, AppointmentCancelRequest, AppointmentCreateRequest, AppointmentListParams, AppointmentListResponse, AppointmentRescheduleRequest, AppointmentStatus, AppointmentType, AppointmentTypeBasic, AppointmentUpdateRequest, AuthUser, AvailabilityResponse, BaseEntity, CalendarDay, CalendarResponse, CalendarSlot, Charge, ChargeAction, ChargeCreateRequest, ChargeListParams, ChargeListResponse, ChargePaymentRequest, ChargeStatus, ChargeUpdateRequest, Communication, CommunicationAudit, CommunicationCreateRequest, CommunicationListParams, CommunicationListResponse, CommunicationStatus, Document, DocumentAction, DocumentAudit, DocumentCategory, DocumentCreateRequest, DocumentListParams, DocumentListResponse, DocumentUpdateRequest, FinanceDashboard, ForgotPasswordRequest, IMessageProvider, JobStatus, JobType, LoginRequest, LoginResponse, LogoutResponse, MessageChannel, MessageJob, MessageJobListParams, MessageJobListResponse, MessageTemplate, MessageTemplateCreateRequest, MessageTemplateListParams, MessageTemplateListResponse, MessageTemplateUpdateRequest, MessageType, Organization, PaginatedResponse, Pagination, Patient, PatientAudit, PatientBasic, PatientContact, PatientContactCreateRequest, PatientContactUpdateRequest, PatientCreateRequest, PatientListParams, PatientListResponse, PatientUpdateRequest, PaymentMethod, Permission, Professional, ProfessionalBasic, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest, ResetPasswordRequest, Role, ScheduleBlock, ScheduleBlockCreateRequest, SendParams, SendResult, StorageOptions, StorageProvider, StoredFile, Task, TaskAction, TaskComment, TaskCommentCreateRequest, TaskCreateRequest, TaskListParams, TaskListResponse, TaskPriority, TaskStatus, TaskStatusUpdateRequest, TaskUpdateRequest, TokenPayload, User, WaitingList };
+export type { ApiError, ApiResponse, Appointment, AppointmentCancelRequest, AppointmentCreateRequest, AppointmentListParams, AppointmentListResponse, AppointmentRescheduleRequest, AppointmentStatus, AppointmentType, AppointmentTypeBasic, AppointmentUpdateRequest, AuthUser, AvailabilityResponse, BaseEntity, CalendarDay, CalendarResponse, CalendarSlot, Charge, ChargeAction, ChargeCreateRequest, ChargeListParams, ChargeListResponse, ChargePaymentRequest, ChargeStatus, ChargeUpdateRequest, Communication, CommunicationAudit, CommunicationCreateRequest, CommunicationKPIs, CommunicationListParams, CommunicationListResponse, CommunicationStatus, DashboardKPI, DashboardPeriod, DashboardSummary, Document, DocumentAction, DocumentAudit, DocumentCategory, DocumentCreateRequest, DocumentListParams, DocumentListResponse, DocumentUpdateRequest, DrillDownParams, FinanceDashboard, FinanceKPIs, ForgotPasswordRequest, IMessageProvider, JobStatus, JobType, LoginRequest, LoginResponse, LogoutResponse, MessageChannel, MessageJob, MessageJobListParams, MessageJobListResponse, MessageTemplate, MessageTemplateCreateRequest, MessageTemplateListParams, MessageTemplateListResponse, MessageTemplateUpdateRequest, MessageType, Organization, PaginatedResponse, Pagination, Patient, PatientAudit, PatientBasic, PatientContact, PatientContactCreateRequest, PatientContactUpdateRequest, PatientCreateRequest, PatientKPIs, PatientListParams, PatientListResponse, PatientUpdateRequest, PaymentMethod, PeriodType, Permission, Professional, ProfessionalBasic, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest, ResetPasswordRequest, Role, ScheduleBlock, ScheduleBlockCreateRequest, ScheduleKPIs, SendParams, SendResult, StorageOptions, StorageProvider, StoredFile, Task, TaskAction, TaskComment, TaskCommentCreateRequest, TaskCreateRequest, TaskKPIs, TaskListParams, TaskListResponse, TaskPriority, TaskStatus, TaskStatusUpdateRequest, TaskUpdateRequest, TokenPayload, User, WaitingList };
