@@ -57,3 +57,6 @@ packages/*/dist/
 packages/contracts/dist/
 packages/shared/dist/
 packages/ui/dist/
+
+# Worktrees
+.worktrees/
