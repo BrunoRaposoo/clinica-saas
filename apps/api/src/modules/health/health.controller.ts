@@ -1,6 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { MetricsInterceptor } from '../../common/interceptors/metrics.interceptor';
 
 interface HealthResponse {
   status: 'ok' | 'error';
@@ -20,10 +21,21 @@ interface LivenessResponse {
   status: 'alive';
 }
 
+interface Metrics {
+  totalRequests: number;
+  averageLatencyMs: number;
+  errorCount: number;
+  uptimeSeconds: number;
+  lastRequest: number;
+}
+
 @ApiTags('Health')
 @Controller('health')
 export class HealthController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly metricsInterceptor: MetricsInterceptor,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Verificar saúde da API' })
@@ -60,5 +72,11 @@ export class HealthController {
   @ApiOperation({ summary: 'Verificar liveness' })
   live(): LivenessResponse {
     return { status: 'alive' };
+  }
+
+  @Get('metrics')
+  @ApiOperation({ summary: 'Verificar métricas' })
+  getMetrics(): Metrics {
+    return this.metricsInterceptor.getMetrics();
   }
 }

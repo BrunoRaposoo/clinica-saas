@@ -18,6 +18,7 @@ import { FinanceModule } from './modules/finance/finance.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { PrismaModule } from './common/prisma.module';
 import { SeedService } from './common/seed.service';
+import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
 
 @Module({
   imports: [
@@ -46,11 +47,11 @@ import { SeedService } from './common/seed.service';
     ScheduleBlocksModule,
     TemplatesModule,
     CommunicationsModule,
-DocumentsModule,
+    DocumentsModule,
     TasksModule,
     FinanceModule,
     DashboardModule,
   ],
-  providers: [SeedService],
+  providers: [SeedService, MetricsInterceptor],
 })
 export class AppModule {}
