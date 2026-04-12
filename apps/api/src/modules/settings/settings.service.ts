@@ -47,7 +47,18 @@ export class SettingsService {
       return this.prisma.organizationSettings.create({
         data: {
           organizationId,
-          ...dto,
+          businessName: dto.businessName || '',
+          tradeName: dto.tradeName,
+          logo: dto.logo,
+          email: dto.email || '',
+          phone: dto.phone,
+          address: dto.address,
+          city: dto.city,
+          state: dto.state,
+          zipCode: dto.zipCode,
+          timezone: dto.timezone || 'America/Sao_Paulo',
+          locale: dto.locale || 'pt-BR',
+          currency: dto.currency || 'BRL',
         },
       });
     }

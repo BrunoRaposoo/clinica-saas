@@ -31,6 +31,12 @@ model Organization {
   documents        Document[]
   tasks           Task[]
   charges        Charge[]
+  settings              OrganizationSettings?
+  units                 Unit[]
+  serviceTypes          ServiceType[]
+  schedulePreferences  SchedulePreferences?
+  communicationPreferences CommunicationPreferences?
+  auditLogs           AuditLog[]
 
   @@index([isActive])
   @@map("organizations")
@@ -65,6 +71,7 @@ model User {
   taskAudits     TaskAudit[]
   createdCharges Charge[]
   chargeAudits   ChargeAudit[]
+  auditLogs     AuditLog[]
 
   @@index([email])
   @@index([organizationId])
@@ -219,7 +226,8 @@ model Professional {
   id               String   @id @default(uuid())
   userId           String   @unique
   organizationId   String
-  specialty        String
+  specialty        String   @default("")
+  registerNumber  String?
   appointmentTypeId String?
   color            String   @default("#3B82F6")
   isActive         Boolean  @default(true)
@@ -612,4 +620,126 @@ model ChargeAudit {
   @@index([chargeId])
   @@index([performedBy])
   @@map("charge_audits")
+}
+
+model OrganizationSettings {
+  id             String   @id @default(uuid())
+  organizationId String   @unique
+  businessName   String
+  tradeName      String?
+  logo           String?
+  email          String
+  phone          String?
+  address        String?
+  city           String?
+  state          String?
+  zipCode        String?
+  timezone       String   @default("America/Sao_Paulo")
+  locale         String   @default("pt-BR")
+  currency       String   @default("BRL")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("organization_settings")
+}
+
+model Unit {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  address        String?
+  phone          String?
+  isActive      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@map("units")
+}
+
+model ServiceType {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  duration       Int      @default(30)
+  price          Decimal? @db.Decimal(10, 2)
+  color          String?
+  isActive      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@map("service_types")
+}
+
+model SchedulePreferences {
+  id                String   @id @default(uuid())
+  organizationId     String   @unique
+  defaultDuration   Int      @default(30)
+  minInterval       Int      @default(15)
+  maxAdvanceDays   Int      @default(60)
+  allowOverbooking Boolean  @default(false)
+  requireConfirmation Boolean @default(true)
+  startWorkHour     String   @default("08:00")
+  endWorkHour     String   @default("18:00")
+  workDays         Json     @default("[1,2,3,4,5]")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("schedule_preferences")
+}
+
+model CommunicationPreferences {
+  id                   String   @id @default(uuid())
+  organizationId        String   @unique
+  defaultChannel       String   @default("email")
+  sendAppointmentReminder Boolean  @default(true)
+  reminderHoursBefore   Int      @default(24)
+  sendPaymentReminder Boolean  @default(true)
+  reminderDaysBefore  Int      @default(3)
+  defaultEmailTemplate String?
+  defaultSmsTemplate  String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("communication_preferences")
+}
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  organizationId  String
+  userId         String
+  action         String
+  entity        String
+  entityId      String?
+  changes       Json?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("audit_logs")
 }

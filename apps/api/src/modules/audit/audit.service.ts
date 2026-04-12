@@ -101,7 +101,7 @@ export class AuditService {
         action,
         entity,
         entityId,
-        changes: changes ? { before: changes['before'], after: changes['after'] } : undefined,
+        changes: changes ? { before: changes['before'], after: changes['after'] } as any : undefined,
         ipAddress,
         userAgent,
       },
