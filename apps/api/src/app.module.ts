@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -24,6 +25,15 @@ import { SeedService } from './common/seed.service';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ThrottlerModule.forRoot([{
+      name: 'short',
+      ttl: 60000,
+      limit: 100,
+    }, {
+      name: 'medium',
+      ttl: 600000,
+      limit: 500,
+    }]),
     PrismaModule,
     HealthModule,
     AuthModule,
