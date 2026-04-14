@@ -382,21 +382,21 @@ declare const ApiResponseSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     success: boolean;
     timestamp: Date;
-    data?: any;
     error?: {
         code: string;
         message: string;
         details?: any;
     } | undefined;
+    data?: any;
 }, {
     success: boolean;
     timestamp: Date;
-    data?: any;
     error?: {
         code: string;
         message: string;
         details?: any;
     } | undefined;
+    data?: any;
 }>;
 declare const PaginationSchema: z.ZodObject<{
     page: z.ZodDefault<z.ZodNumber>;
