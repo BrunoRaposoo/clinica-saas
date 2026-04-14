@@ -14,7 +14,7 @@ export default function PatientDetailPage() {
   const patientId = params.id as string;
 
   const [isEditing, setIsEditing] = useState(false);
-  const [form, setForm] = useState<Partial<Patient>>({});
+  const [form, setForm] = useState<Partial<Patient>>({} as any);
   const [error, setError] = useState('');
 
   const { data: patient, isLoading, error: loadError } = useQuery({
@@ -46,7 +46,13 @@ export default function PatientDetailPage() {
   });
 
   const handleSave = () => {
-    updateMutation.mutate(form);
+    const cleanForm = {
+      name: form.name || undefined,
+      email: form.email || undefined,
+      phone: form.phone || undefined,
+      document: form.document || undefined,
+    };
+    updateMutation.mutate(cleanForm);
   };
 
   if (isLoading) {

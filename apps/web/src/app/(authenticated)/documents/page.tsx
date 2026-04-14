@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { documentsApi, type Document, type DocumentCategory } from '@/lib/api/documents';
 
 export default function DocumentsPage() {
@@ -14,10 +14,21 @@ export default function DocumentsPage() {
     search: '',
   });
 
+  useEffect(() => {
+    loadDocuments();
+  }, []);
+
   const loadDocuments = async () => {
     setLoading(true);
     try {
-      const response = await documentsApi.list({ page, limit: 20, ...filter });
+      const apiFilter = {
+        page,
+        limit: 20,
+        ...(filter.category !== '' && { category: filter.category }),
+        ...(filter.type && { type: filter.type }),
+        ...(filter.search && { search: filter.search }),
+      };
+      const response = await documentsApi.list(apiFilter);
       setDocuments(response.items);
       setTotalPages(response.pagination.totalPages);
     } catch (error) {

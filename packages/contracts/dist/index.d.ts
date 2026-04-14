@@ -68,6 +68,109 @@ interface DrillDownParams {
     professionalId?: string;
 }
 
+type IntegrationProvider = 'email' | 'whatsapp';
+type IntegrationStatus = 'connected' | 'disconnected' | 'error';
+type IntegrationLogStatus = 'pending' | 'success' | 'failed';
+interface Integration {
+    id: string;
+    organizationId: string;
+    provider: IntegrationProvider;
+    providerConfig?: Record<string, unknown>;
+    isActive: boolean;
+    lastSyncAt?: string;
+    status: IntegrationStatus;
+    createdAt: string;
+    updatedAt: string;
+}
+interface IntegrationListParams {
+    page?: number;
+    limit?: number;
+    provider?: IntegrationProvider;
+    status?: IntegrationStatus;
+}
+interface IntegrationListResponse {
+    items: Integration[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+interface IntegrationCreateRequest {
+    provider: IntegrationProvider;
+    providerConfig?: Record<string, unknown>;
+    credentials: Record<string, unknown>;
+}
+interface IntegrationUpdateRequest {
+    providerConfig?: Record<string, unknown>;
+    credentials?: Record<string, unknown>;
+    isActive?: boolean;
+}
+interface IntegrationLog {
+    id: string;
+    integrationId: string;
+    event: string;
+    status: IntegrationLogStatus;
+    errorMessage?: string;
+    requestPayload?: Record<string, unknown>;
+    responsePayload?: Record<string, unknown>;
+    createdAt: string;
+}
+interface IntegrationLogListParams {
+    page?: number;
+    limit?: number;
+    status?: IntegrationLogStatus;
+}
+interface IntegrationLogListResponse {
+    items: IntegrationLog[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+interface Automation {
+    id: string;
+    organizationId: string;
+    name: string;
+    event: string;
+    action: string;
+    config: Record<string, unknown>;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+interface AutomationListParams {
+    page?: number;
+    limit?: number;
+    event?: string;
+    isActive?: boolean;
+}
+interface AutomationListResponse {
+    items: Automation[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+interface AutomationCreateRequest {
+    name: string;
+    event: string;
+    action: string;
+    config: Record<string, unknown>;
+}
+interface AutomationUpdateRequest {
+    name?: string;
+    event?: string;
+    action?: string;
+    config?: Record<string, unknown>;
+    isActive?: boolean;
+}
+
 interface AuthUser {
     id: string;
     email: string;
@@ -825,4 +928,4 @@ interface PaginatedResponse<T> {
     pagination: Pagination;
 }
 
-export type { ApiError, ApiResponse, Appointment, AppointmentCancelRequest, AppointmentCreateRequest, AppointmentListParams, AppointmentListResponse, AppointmentRescheduleRequest, AppointmentStatus, AppointmentType, AppointmentTypeBasic, AppointmentUpdateRequest, AuthUser, AvailabilityResponse, BaseEntity, CalendarDay, CalendarResponse, CalendarSlot, Charge, ChargeAction, ChargeCreateRequest, ChargeListParams, ChargeListResponse, ChargePaymentRequest, ChargeStatus, ChargeUpdateRequest, Communication, CommunicationAudit, CommunicationCreateRequest, CommunicationKPIs, CommunicationListParams, CommunicationListResponse, CommunicationStatus, DashboardKPI, DashboardPeriod, DashboardSummary, Document, DocumentAction, DocumentAudit, DocumentCategory, DocumentCreateRequest, DocumentListParams, DocumentListResponse, DocumentUpdateRequest, DrillDownParams, FinanceDashboard, FinanceKPIs, ForgotPasswordRequest, IMessageProvider, JobStatus, JobType, LoginRequest, LoginResponse, LogoutResponse, MessageChannel, MessageJob, MessageJobListParams, MessageJobListResponse, MessageTemplate, MessageTemplateCreateRequest, MessageTemplateListParams, MessageTemplateListResponse, MessageTemplateUpdateRequest, MessageType, Organization, PaginatedResponse, Pagination, Patient, PatientAudit, PatientBasic, PatientContact, PatientContactCreateRequest, PatientContactUpdateRequest, PatientCreateRequest, PatientKPIs, PatientListParams, PatientListResponse, PatientUpdateRequest, PaymentMethod, PeriodType, Permission, Professional, ProfessionalBasic, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest, ResetPasswordRequest, Role, ScheduleBlock, ScheduleBlockCreateRequest, ScheduleKPIs, SendParams, SendResult, StorageOptions, StorageProvider, StoredFile, Task, TaskAction, TaskComment, TaskCommentCreateRequest, TaskCreateRequest, TaskKPIs, TaskListParams, TaskListResponse, TaskPriority, TaskStatus, TaskStatusUpdateRequest, TaskUpdateRequest, TokenPayload, User, WaitingList };
+export type { ApiError, ApiResponse, Appointment, AppointmentCancelRequest, AppointmentCreateRequest, AppointmentListParams, AppointmentListResponse, AppointmentRescheduleRequest, AppointmentStatus, AppointmentType, AppointmentTypeBasic, AppointmentUpdateRequest, AuthUser, Automation, AutomationCreateRequest, AutomationListParams, AutomationListResponse, AutomationUpdateRequest, AvailabilityResponse, BaseEntity, CalendarDay, CalendarResponse, CalendarSlot, Charge, ChargeAction, ChargeCreateRequest, ChargeListParams, ChargeListResponse, ChargePaymentRequest, ChargeStatus, ChargeUpdateRequest, Communication, CommunicationAudit, CommunicationCreateRequest, CommunicationKPIs, CommunicationListParams, CommunicationListResponse, CommunicationStatus, DashboardKPI, DashboardPeriod, DashboardSummary, Document, DocumentAction, DocumentAudit, DocumentCategory, DocumentCreateRequest, DocumentListParams, DocumentListResponse, DocumentUpdateRequest, DrillDownParams, FinanceDashboard, FinanceKPIs, ForgotPasswordRequest, IMessageProvider, Integration, IntegrationCreateRequest, IntegrationListParams, IntegrationListResponse, IntegrationLog, IntegrationLogListParams, IntegrationLogListResponse, IntegrationLogStatus, IntegrationProvider, IntegrationStatus, IntegrationUpdateRequest, JobStatus, JobType, LoginRequest, LoginResponse, LogoutResponse, MessageChannel, MessageJob, MessageJobListParams, MessageJobListResponse, MessageTemplate, MessageTemplateCreateRequest, MessageTemplateListParams, MessageTemplateListResponse, MessageTemplateUpdateRequest, MessageType, Organization, PaginatedResponse, Pagination, Patient, PatientAudit, PatientBasic, PatientContact, PatientContactCreateRequest, PatientContactUpdateRequest, PatientCreateRequest, PatientKPIs, PatientListParams, PatientListResponse, PatientUpdateRequest, PaymentMethod, PeriodType, Permission, Professional, ProfessionalBasic, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest, ResetPasswordRequest, Role, ScheduleBlock, ScheduleBlockCreateRequest, ScheduleKPIs, SendParams, SendResult, StorageOptions, StorageProvider, StoredFile, Task, TaskAction, TaskComment, TaskCommentCreateRequest, TaskCreateRequest, TaskKPIs, TaskListParams, TaskListResponse, TaskPriority, TaskStatus, TaskStatusUpdateRequest, TaskUpdateRequest, TokenPayload, User, WaitingList };
