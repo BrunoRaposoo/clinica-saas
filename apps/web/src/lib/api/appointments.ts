@@ -13,15 +13,9 @@ import type {
   ScheduleBlockCreateRequest,
 } from '@clinica-saas/contracts';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+import { getAuthHeaders, authenticatedFetch } from './client';
 
-function getAuthHeaders(): HeadersInit {
-  const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-  };
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 export interface AppointmentsApiClient {
   getAppointments(params?: AppointmentListParams): Promise<AppointmentListResponse>;
@@ -58,9 +52,8 @@ export const appointmentsApi: AppointmentsApiClient = {
       if (params.status) searchParams.set('status', params.status);
     }
 
-    const res = await fetch(`${API_URL}/appointments?${searchParams}`, {
+    const res = await authenticatedFetch(`${API_URL}/appointments?${searchParams}`, {
       headers: getAuthHeaders(),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -72,9 +65,8 @@ export const appointmentsApi: AppointmentsApiClient = {
   },
 
   async getAppointment(id: string) {
-    const res = await fetch(`${API_URL}/appointments/${id}`, {
+    const res = await authenticatedFetch(`${API_URL}/appointments/${id}`, {
       headers: getAuthHeaders(),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -86,11 +78,10 @@ export const appointmentsApi: AppointmentsApiClient = {
   },
 
   async createAppointment(data: AppointmentCreateRequest) {
-    const res = await fetch(`${API_URL}/appointments`, {
+    const res = await authenticatedFetch(`${API_URL}/appointments`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -102,11 +93,10 @@ export const appointmentsApi: AppointmentsApiClient = {
   },
 
   async updateAppointment(id: string, data: AppointmentUpdateRequest) {
-    const res = await fetch(`${API_URL}/appointments/${id}`, {
+    const res = await authenticatedFetch(`${API_URL}/appointments/${id}`, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -118,11 +108,10 @@ export const appointmentsApi: AppointmentsApiClient = {
   },
 
   async cancelAppointment(id: string, data: AppointmentCancelRequest) {
-    const res = await fetch(`${API_URL}/appointments/${id}/cancel`, {
+    const res = await authenticatedFetch(`${API_URL}/appointments/${id}/cancel`, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -134,11 +123,10 @@ export const appointmentsApi: AppointmentsApiClient = {
   },
 
   async rescheduleAppointment(id: string, data: AppointmentRescheduleRequest) {
-    const res = await fetch(`${API_URL}/appointments/${id}/reschedule`, {
+    const res = await authenticatedFetch(`${API_URL}/appointments/${id}/reschedule`, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -153,9 +141,8 @@ export const appointmentsApi: AppointmentsApiClient = {
     const searchParams = new URLSearchParams({ startDate, endDate, view });
     if (professionalId) searchParams.set('professionalId', professionalId);
 
-    const res = await fetch(`${API_URL}/appointments/calendar?${searchParams}`, {
+    const res = await authenticatedFetch(`${API_URL}/appointments/calendar?${searchParams}`, {
       headers: getAuthHeaders(),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -169,9 +156,8 @@ export const appointmentsApi: AppointmentsApiClient = {
   async getAvailability(appointmentTypeId: string, professionalId: string, date: string) {
     const searchParams = new URLSearchParams({ appointmentTypeId, professionalId, date });
 
-    const res = await fetch(`${API_URL}/appointments/availability?${searchParams}`, {
+    const res = await authenticatedFetch(`${API_URL}/appointments/availability?${searchParams}`, {
       headers: getAuthHeaders(),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -185,9 +171,8 @@ export const appointmentsApi: AppointmentsApiClient = {
 
 export const professionalsApi: ProfessionalsApiClient = {
   async getProfessionals() {
-    const res = await fetch(`${API_URL}/professionals`, {
+    const res = await authenticatedFetch(`${API_URL}/professionals`, {
       headers: getAuthHeaders(),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -199,9 +184,8 @@ export const professionalsApi: ProfessionalsApiClient = {
   },
 
   async getProfessional(id: string) {
-    const res = await fetch(`${API_URL}/professionals/${id}`, {
+    const res = await authenticatedFetch(`${API_URL}/professionals/${id}`, {
       headers: getAuthHeaders(),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -220,9 +204,8 @@ export const scheduleBlocksApi: ScheduleBlocksApiClient = {
     if (endDate) searchParams.set('endDate', endDate);
     if (professionalId) searchParams.set('professionalId', professionalId);
 
-    const res = await fetch(`${API_URL}/schedule-blocks?${searchParams}`, {
+    const res = await authenticatedFetch(`${API_URL}/schedule-blocks?${searchParams}`, {
       headers: getAuthHeaders(),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -234,11 +217,10 @@ export const scheduleBlocksApi: ScheduleBlocksApiClient = {
   },
 
   async createScheduleBlock(data: ScheduleBlockCreateRequest) {
-    const res = await fetch(`${API_URL}/schedule-blocks`, {
+    const res = await authenticatedFetch(`${API_URL}/schedule-blocks`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -250,10 +232,9 @@ export const scheduleBlocksApi: ScheduleBlocksApiClient = {
   },
 
   async deleteScheduleBlock(id: string) {
-    const res = await fetch(`${API_URL}/schedule-blocks/${id}`, {
+    const res = await authenticatedFetch(`${API_URL}/schedule-blocks/${id}`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
-      credentials: 'include',
     });
 
     if (!res.ok) {

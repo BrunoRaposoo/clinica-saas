@@ -1,4 +1,6 @@
-const BASE_URL = '/settings';
+import { authenticatedFetch } from './client';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 export interface OrganizationSettings {
   id: string;
@@ -99,15 +101,14 @@ export interface AuditLog {
 
 export const settingsApi = {
   getSettings: async (): Promise<OrganizationSettings> => {
-    const response = await fetch(BASE_URL);
+    const response = await authenticatedFetch(`${API_URL}/settings`);
     if (!response.ok) throw new Error('Failed to fetch settings');
     return response.json();
   },
 
   updateSettings: async (data: Partial<OrganizationSettings>): Promise<OrganizationSettings> => {
-    const response = await fetch(BASE_URL, {
+    const response = await authenticatedFetch(`${API_URL}/settings`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to update settings');
@@ -119,15 +120,14 @@ export const settingsApi = {
     if (params?.page) searchParams.set('page', String(params.page));
     if (params?.limit) searchParams.set('limit', String(params.limit));
     if (params?.isActive !== undefined) searchParams.set('isActive', String(params.isActive));
-    const response = await fetch(`${BASE_URL}/units?${searchParams}`);
+    const response = await authenticatedFetch(`${API_URL}/settings/units?${searchParams}`);
     if (!response.ok) throw new Error('Failed to fetch units');
     return response.json();
   },
 
   createUnit: async (data: { name: string; address?: string; phone?: string }): Promise<Unit> => {
-    const response = await fetch(`${BASE_URL}/units`, {
+    const response = await authenticatedFetch(`${API_URL}/settings/units`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to create unit');
@@ -135,9 +135,8 @@ export const settingsApi = {
   },
 
   updateUnit: async (id: string, data: Partial<Unit>): Promise<Unit> => {
-    const response = await fetch(`${BASE_URL}/units/${id}`, {
+    const response = await authenticatedFetch(`${API_URL}/settings/units/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to update unit');
@@ -145,7 +144,7 @@ export const settingsApi = {
   },
 
   deleteUnit: async (id: string): Promise<void> => {
-    const response = await fetch(`${BASE_URL}/units/${id}`, { method: 'DELETE' });
+    const response = await authenticatedFetch(`${API_URL}/settings/units/${id}`, { method: 'DELETE' });
     if (!response.ok) throw new Error('Failed to delete unit');
   },
 
@@ -154,15 +153,14 @@ export const settingsApi = {
     if (params?.page) searchParams.set('page', String(params.page));
     if (params?.limit) searchParams.set('limit', String(params.limit));
     if (params?.isActive !== undefined) searchParams.set('isActive', String(params.isActive));
-    const response = await fetch(`${BASE_URL}/service-types?${searchParams}`);
+    const response = await authenticatedFetch(`${API_URL}/settings/service-types?${searchParams}`);
     if (!response.ok) throw new Error('Failed to fetch service types');
     return response.json();
   },
 
   createServiceType: async (data: { name: string; description?: string; duration: number; price?: string; color?: string }): Promise<ServiceType> => {
-    const response = await fetch(`${BASE_URL}/service-types`, {
+    const response = await authenticatedFetch(`${API_URL}/settings/service-types`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to create service type');
@@ -170,9 +168,8 @@ export const settingsApi = {
   },
 
   updateServiceType: async (id: string, data: Partial<ServiceType>): Promise<ServiceType> => {
-    const response = await fetch(`${BASE_URL}/service-types/${id}`, {
+    const response = await authenticatedFetch(`${API_URL}/settings/service-types/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to update service type');
@@ -180,7 +177,7 @@ export const settingsApi = {
   },
 
   deleteServiceType: async (id: string): Promise<void> => {
-    const response = await fetch(`${BASE_URL}/service-types/${id}`, { method: 'DELETE' });
+    const response = await authenticatedFetch(`${API_URL}/settings/service-types/${id}`, { method: 'DELETE' });
     if (!response.ok) throw new Error('Failed to delete service type');
   },
 
@@ -189,15 +186,14 @@ export const settingsApi = {
     if (params?.page) searchParams.set('page', String(params.page));
     if (params?.limit) searchParams.set('limit', String(params.limit));
     if (params?.isActive !== undefined) searchParams.set('isActive', String(params.isActive));
-    const response = await fetch(`${BASE_URL}/professionals?${searchParams}`);
+    const response = await authenticatedFetch(`${API_URL}/settings/professionals?${searchParams}`);
     if (!response.ok) throw new Error('Failed to fetch professionals');
     return response.json();
   },
 
   createProfessional: async (data: { userId: string; specialty?: string; registerNumber?: string }): Promise<Professional> => {
-    const response = await fetch(`${BASE_URL}/professionals`, {
+    const response = await authenticatedFetch(`${API_URL}/settings/professionals`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to create professional');
@@ -205,9 +201,8 @@ export const settingsApi = {
   },
 
   updateProfessional: async (id: string, data: Partial<Professional>): Promise<Professional> => {
-    const response = await fetch(`${BASE_URL}/professionals/${id}`, {
+    const response = await authenticatedFetch(`${API_URL}/settings/professionals/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to update professional');
@@ -215,20 +210,19 @@ export const settingsApi = {
   },
 
   deleteProfessional: async (id: string): Promise<void> => {
-    const response = await fetch(`${BASE_URL}/professionals/${id}`, { method: 'DELETE' });
+    const response = await authenticatedFetch(`${API_URL}/settings/professionals/${id}`, { method: 'DELETE' });
     if (!response.ok) throw new Error('Failed to delete professional');
   },
 
   getSchedulePreferences: async (): Promise<SchedulePreferences> => {
-    const response = await fetch(`${BASE_URL}/schedule-preferences`);
+    const response = await authenticatedFetch(`${API_URL}/settings/schedule-preferences`);
     if (!response.ok) throw new Error('Failed to fetch schedule preferences');
     return response.json();
   },
 
   updateSchedulePreferences: async (data: Partial<SchedulePreferences>): Promise<SchedulePreferences> => {
-    const response = await fetch(`${BASE_URL}/schedule-preferences`, {
+    const response = await authenticatedFetch(`${API_URL}/settings/schedule-preferences`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to update schedule preferences');
@@ -236,15 +230,14 @@ export const settingsApi = {
   },
 
   getCommunicationPreferences: async (): Promise<CommunicationPreferences> => {
-    const response = await fetch(`${BASE_URL}/communication-preferences`);
+    const response = await authenticatedFetch(`${API_URL}/settings/communication-preferences`);
     if (!response.ok) throw new Error('Failed to fetch communication preferences');
     return response.json();
   },
 
   updateCommunicationPreferences: async (data: Partial<CommunicationPreferences>): Promise<CommunicationPreferences> => {
-    const response = await fetch(`${BASE_URL}/communication-preferences`, {
+    const response = await authenticatedFetch(`${API_URL}/settings/communication-preferences`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to update communication preferences');
@@ -270,13 +263,13 @@ export const auditApi = {
     if (params?.entity) searchParams.set('entity', params.entity);
     if (params?.startDate) searchParams.set('startDate', params.startDate);
     if (params?.endDate) searchParams.set('endDate', params.endDate);
-    const response = await fetch(`/audit/logs?${searchParams}`);
+    const response = await authenticatedFetch(`${API_URL}/audit/logs?${searchParams}`);
     if (!response.ok) throw new Error('Failed to fetch audit logs');
     return response.json();
   },
 
   getLog: async (id: string): Promise<AuditLog> => {
-    const response = await fetch(`/audit/logs/${id}`);
+    const response = await authenticatedFetch(`${API_URL}/audit/logs/${id}`);
     if (!response.ok) throw new Error('Failed to fetch audit log');
     return response.json();
   },

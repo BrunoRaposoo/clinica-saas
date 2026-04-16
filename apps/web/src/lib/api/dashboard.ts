@@ -1,6 +1,7 @@
 import type { PeriodType, DashboardSummary, DrillDownParams } from '@clinica-saas/contracts';
+import { authenticatedFetch } from './client';
 
-const API_BASE = '/api/v1/dashboard';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 export async function getDashboardSummary(
   organizationId: string,
@@ -12,7 +13,7 @@ export async function getDashboardSummary(
   if (startDate) params.append('startDate', startDate);
   if (endDate) params.append('endDate', endDate);
 
-  const res = await fetch(`${API_BASE}/summary?${params}`);
+  const res = await authenticatedFetch(`${API_URL}/dashboard/summary?${params}`);
   if (!res.ok) throw new Error('Failed to fetch dashboard');
   return res.json();
 }
@@ -25,7 +26,7 @@ export async function getChargesDrillDown(organizationId: string, params: DrillD
   if (params.page) searchParams.append('page', String(params.page));
   if (params.limit) searchParams.append('limit', String(params.limit));
 
-  const res = await fetch(`${API_BASE}/charges?${searchParams}`);
+  const res = await authenticatedFetch(`${API_URL}/dashboard/charges?${searchParams}`);
   if (!res.ok) throw new Error('Failed to fetch charges');
   return res.json();
 }
@@ -39,7 +40,7 @@ export async function getAppointmentsDrillDown(organizationId: string, params: D
   if (params.page) searchParams.append('page', String(params.page));
   if (params.limit) searchParams.append('limit', String(params.limit));
 
-  const res = await fetch(`${API_BASE}/appointments?${searchParams}`);
+  const res = await authenticatedFetch(`${API_URL}/dashboard/appointments?${searchParams}`);
   if (!res.ok) throw new Error('Failed to fetch appointments');
   return res.json();
 }
@@ -52,7 +53,7 @@ export async function getPatientsDrillDown(organizationId: string, params: Drill
   if (params.page) searchParams.append('page', String(params.page));
   if (params.limit) searchParams.append('limit', String(params.limit));
 
-  const res = await fetch(`${API_BASE}/patients?${searchParams}`);
+  const res = await authenticatedFetch(`${API_URL}/dashboard/patients?${searchParams}`);
   if (!res.ok) throw new Error('Failed to fetch patients');
   return res.json();
 }
@@ -65,7 +66,7 @@ export async function getCommunicationsDrillDown(organizationId: string, params:
   if (params.page) searchParams.append('page', String(params.page));
   if (params.limit) searchParams.append('limit', String(params.limit));
 
-  const res = await fetch(`${API_BASE}/communications?${searchParams}`);
+  const res = await authenticatedFetch(`${API_URL}/dashboard/communications?${searchParams}`);
   if (!res.ok) throw new Error('Failed to fetch communications');
   return res.json();
 }
@@ -78,7 +79,7 @@ export async function getTasksDrillDown(organizationId: string, params: DrillDow
   if (params.page) searchParams.append('page', String(params.page));
   if (params.limit) searchParams.append('limit', String(params.limit));
 
-  const res = await fetch(`${API_BASE}/tasks?${searchParams}`);
+  const res = await authenticatedFetch(`${API_URL}/dashboard/tasks?${searchParams}`);
   if (!res.ok) throw new Error('Failed to fetch tasks');
   return res.json();
 }

@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 
@@ -16,24 +16,33 @@ export interface JwtPayload {
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
+  constructor(
+    @Inject(ConfigService) private configService: ConfigService,
+  ) {}
+
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
 
     if (!authHeader) {
+      console.log('[Auth] Token não fornecido');
       throw new UnauthorizedException('Token não fornecido.');
     }
 
     const [bearer, token] = authHeader.split(' ');
 
     if (bearer !== 'Bearer' || !token) {
+      console.log('[Auth] Formato de token inválido');
       throw new UnauthorizedException('Formato de token inválido.');
     }
 
     try {
-      const configService = new ConfigService();
-      const payload = jwt.verify(token, configService.get('JWT_SECRET') || 'dev-secret-change-in-production') as JwtPayload;
+      const jwtSecret = this.configService.get('JWT_SECRET') || 'dev-secret-change-in-production-minimum-32-chars';
       
+      const payload = jwt.verify(token, jwtSecret) as JwtPayload;
+
+      console.log('[Auth] Token válido para usuário:', payload.email);
+
       request.user = payload;
       request.userId = payload.sub;
       request.organizationId = payload.organizationId;
@@ -42,6 +51,7 @@ export class JwtAuthGuard implements CanActivate {
 
       return true;
     } catch (error) {
+      console.log('[Auth] Token inválido ou expirado:', error.name);
       throw new UnauthorizedException('Token inválido ou expirado.');
     }
   }

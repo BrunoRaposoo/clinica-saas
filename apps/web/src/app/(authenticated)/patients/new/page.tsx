@@ -6,6 +6,8 @@ import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import { patientsApi } from '@/lib/api/patients';
 import { PatientContactCreateRequest } from '@clinica-saas/contracts';
+import { PhoneInput } from '@/components/forms/phone-input';
+import { CepInput } from '@/components/forms/cep-input';
 
 interface ContactForm {
   name: string;
@@ -115,13 +117,10 @@ export default function NewPatientPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Telefone</label>
-              <input
-                type="text"
+              <PhoneInput
                 value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full px-4 py-2 border rounded"
-                placeholder="11999999999"
+                onChange={(value) => setForm({ ...form, phone: value })}
+                label="Telefone"
               />
             </div>
             <div>
@@ -215,12 +214,19 @@ export default function NewPatientPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">CEP</label>
-              <input
-                type="text"
+              <CepInput
                 value={form.addressZipCode}
-                onChange={(e) => setForm({ ...form, addressZipCode: e.target.value })}
-                className="w-full px-4 py-2 border rounded"
+                onChange={(value) => setForm({ ...form, addressZipCode: value })}
+                onAddressFill={({ street, district, city, state }) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    addressStreet: street,
+                    addressDistrict: district,
+                    addressCity: city,
+                    addressState: state,
+                  }));
+                }}
+                label="CEP"
               />
             </div>
           </div>
@@ -268,12 +274,11 @@ export default function NewPatientPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Telefone</label>
-                <input
-                  type="text"
+                <PhoneInput
                   value={contact.phone}
-                  onChange={(e) => updateContact(index, 'phone', e.target.value)}
-                  className="w-full px-3 py-2 border rounded"
+                  onChange={(value) => updateContact(index, 'phone', value)}
+                  label="Telefone"
+                  className="col-span-2"
                 />
               </div>
               <div className="flex items-end gap-2">

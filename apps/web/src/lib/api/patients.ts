@@ -8,15 +8,9 @@ import type {
   PatientContactUpdateRequest,
 } from '@clinica-saas/contracts';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+import { getAuthHeaders, authenticatedFetch } from './client';
 
-function getAuthHeaders(): HeadersInit {
-  const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-  };
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 export interface PatientsApiClient {
   getPatients(params?: PatientListParams): Promise<PatientListResponse>;
@@ -43,7 +37,7 @@ export const patientsApi: PatientsApiClient = {
       if (params.isActive !== undefined) searchParams.set('isActive', String(params.isActive));
     }
 
-    const res = await fetch(`${API_URL}/patients?${searchParams}`, {
+    const res = await authenticatedFetch(`${API_URL}/patients?${searchParams}`, {
       headers: getAuthHeaders(),
       credentials: 'include',
     });
@@ -57,7 +51,7 @@ export const patientsApi: PatientsApiClient = {
   },
 
   async getPatient(id: string) {
-    const res = await fetch(`${API_URL}/patients/${id}`, {
+    const res = await authenticatedFetch(`${API_URL}/patients/${id}`, {
       headers: getAuthHeaders(),
       credentials: 'include',
     });
@@ -71,7 +65,7 @@ export const patientsApi: PatientsApiClient = {
   },
 
   async createPatient(data: PatientCreateRequest) {
-    const res = await fetch(`${API_URL}/patients`, {
+    const res = await authenticatedFetch(`${API_URL}/patients`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -87,7 +81,7 @@ export const patientsApi: PatientsApiClient = {
   },
 
   async updatePatient(id: string, data: PatientUpdateRequest) {
-    const res = await fetch(`${API_URL}/patients/${id}`, {
+    const res = await authenticatedFetch(`${API_URL}/patients/${id}`, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -103,7 +97,7 @@ export const patientsApi: PatientsApiClient = {
   },
 
   async deletePatient(id: string) {
-    const res = await fetch(`${API_URL}/patients/${id}`, {
+    const res = await authenticatedFetch(`${API_URL}/patients/${id}`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
       credentials: 'include',
@@ -116,9 +110,8 @@ export const patientsApi: PatientsApiClient = {
   },
 
   async getPatientContacts(patientId: string) {
-    const res = await fetch(`${API_URL}/patients/${patientId}/contacts`, {
+    const res = await authenticatedFetch(`${API_URL}/patients/${patientId}/contacts`, {
       headers: getAuthHeaders(),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -130,11 +123,10 @@ export const patientsApi: PatientsApiClient = {
   },
 
   async createPatientContact(patientId: string, data: PatientContactCreateRequest) {
-    const res = await fetch(`${API_URL}/patients/${patientId}/contacts`, {
+    const res = await authenticatedFetch(`${API_URL}/patients/${patientId}/contacts`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -146,11 +138,10 @@ export const patientsApi: PatientsApiClient = {
   },
 
   async updatePatientContact(patientId: string, contactId: string, data: PatientContactUpdateRequest) {
-    const res = await fetch(`${API_URL}/patients/contacts/${contactId}`, {
+    const res = await authenticatedFetch(`${API_URL}/patients/contacts/${contactId}`, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -162,10 +153,9 @@ export const patientsApi: PatientsApiClient = {
   },
 
   async deletePatientContact(patientId: string, contactId: string) {
-    const res = await fetch(`${API_URL}/patients/contacts/${contactId}`, {
+    const res = await authenticatedFetch(`${API_URL}/patients/contacts/${contactId}`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
-      credentials: 'include',
     });
 
     if (!res.ok) {
@@ -175,9 +165,8 @@ export const patientsApi: PatientsApiClient = {
   },
 
   async getPatientAudit(patientId: string) {
-    const res = await fetch(`${API_URL}/patients/${patientId}/audit`, {
+    const res = await authenticatedFetch(`${API_URL}/patients/${patientId}/audit`, {
       headers: getAuthHeaders(),
-      credentials: 'include',
     });
 
     if (!res.ok) {

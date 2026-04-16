@@ -8,14 +8,16 @@ import {
   FinanceDashboard,
 } from '@clinica-saas/contracts';
 
-const BASE_URL = '/finance';
+import { authenticatedFetch } from './client';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 export const financeApi = {
   getDashboard: async (periodFrom?: string, periodTo?: string): Promise<FinanceDashboard> => {
     const params = new URLSearchParams();
     if (periodFrom) params.set('periodFrom', periodFrom);
     if (periodTo) params.set('periodTo', periodTo);
-    const response = await fetch(`${BASE_URL}/dashboard?${params}`);
+    const response = await authenticatedFetch(`${API_URL}/finance/dashboard?${params}`);
     if (!response.ok) throw new Error('Failed to fetch dashboard');
     return response.json();
   },
@@ -29,21 +31,20 @@ export const financeApi = {
         }
       });
     }
-    const response = await fetch(`${BASE_URL}/charges?${searchParams}`);
+    const response = await authenticatedFetch(`${API_URL}/finance/charges?${searchParams}`);
     if (!response.ok) throw new Error('Failed to fetch charges');
     return response.json();
   },
 
   getCharge: async (id: string): Promise<Charge> => {
-    const response = await fetch(`${BASE_URL}/charges/${id}`);
+    const response = await authenticatedFetch(`${API_URL}/finance/charges/${id}`);
     if (!response.ok) throw new Error('Failed to fetch charge');
     return response.json();
   },
 
   createCharge: async (data: ChargeCreateRequest): Promise<Charge> => {
-    const response = await fetch(`${BASE_URL}/charges`, {
+    const response = await authenticatedFetch(`${API_URL}/finance/charges`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to create charge');
@@ -51,9 +52,8 @@ export const financeApi = {
   },
 
   updateCharge: async (id: string, data: ChargeUpdateRequest): Promise<Charge> => {
-    const response = await fetch(`${BASE_URL}/charges/${id}`, {
+    const response = await authenticatedFetch(`${API_URL}/finance/charges/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to update charge');
@@ -61,9 +61,8 @@ export const financeApi = {
   },
 
   processPayment: async (id: string, data: ChargePaymentRequest): Promise<Charge> => {
-    const response = await fetch(`${BASE_URL}/charges/${id}/pay`, {
+    const response = await authenticatedFetch(`${API_URL}/finance/charges/${id}/pay`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to process payment');
@@ -71,7 +70,7 @@ export const financeApi = {
   },
 
   deleteCharge: async (id: string): Promise<void> => {
-    const response = await fetch(`${BASE_URL}/charges/${id}`, { method: 'DELETE' });
+    const response = await authenticatedFetch(`${API_URL}/finance/charges/${id}`, { method: 'DELETE' });
     if (!response.ok) throw new Error('Failed to delete charge');
   },
 };
