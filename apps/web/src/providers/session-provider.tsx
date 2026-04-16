@@ -1,8 +1,8 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { AuthUserResponse, LoginResponsePayload } from '@clinica-saas/contracts';
-import { authApi } from '@/lib/api/auth';
+import { AuthUserResponse } from '@clinica-saas/contracts';
+import { setTokens, clearTokens, getAccessToken, getRefreshToken, hasTokens, clearTokens as clientClearTokens } from '@/lib/api/client';
 
 interface SessionContextType {
   user: AuthUserResponse | null;
@@ -10,7 +10,6 @@ interface SessionContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  refreshToken: () => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -21,49 +20,64 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    const accessToken = localStorage.getItem('accessToken');
-    if (storedUser && accessToken) {
+    const storedAccessToken = localStorage.getItem('accessToken');
+    const storedRefreshToken = localStorage.getItem('refreshToken');
+
+    if (storedUser && storedAccessToken && storedRefreshToken) {
       setUser(JSON.parse(storedUser));
+      setTokens(storedAccessToken, storedRefreshToken);
     }
     setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await authApi.login({ email, password });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+      credentials: 'include',
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || 'Login failed');
+    }
+
+    const response = await res.json();
+    
     localStorage.setItem('accessToken', response.accessToken);
     localStorage.setItem('refreshToken', response.refreshToken);
     localStorage.setItem('user', JSON.stringify(response.user));
+    
+    setTokens(response.accessToken, response.refreshToken);
     setUser(response.user);
   };
 
   const logout = async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
+    const refreshToken = getRefreshToken();
     if (refreshToken) {
       try {
-        await authApi.logout(refreshToken);
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/auth/logout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+          credentials: 'include',
+        });
       } catch (e) {
         console.error('Logout error:', e);
       }
     }
+    
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+    
+    clientClearTokens();
     setUser(null);
   };
 
-  const refreshToken = async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) return;
-    try {
-      const response = await authApi.refreshToken(refreshToken);
-      localStorage.setItem('accessToken', response.accessToken);
-    } catch {
-      await logout();
-    }
-  };
-
   return (
-    <SessionContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, logout, refreshToken }}>
+    <SessionContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, logout }}>
       {children}
     </SessionContext.Provider>
   );

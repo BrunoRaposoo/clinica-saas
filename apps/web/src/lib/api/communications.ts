@@ -1,12 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+import { getAuthHeaders, authenticatedFetch } from './client';
 
-function getAuthHeaders(): HeadersInit {
-  const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-  };
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 export interface Communication {
   id: string;
@@ -20,41 +14,38 @@ export interface Communication {
   message: string;
   status: string;
   provider?: string;
-  providerMessageId?: string;
-  errorMessage?: string;
-  scheduledAt?: string;
+  scheduledAt: string;
   sentAt?: string;
-  deliveredAt?: string;
   createdAt: string;
 }
 
-export interface CommunicationsResponse {
-  items: Communication[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-export interface CreateCommunicationDto {
+export interface CommunicationCreateRequest {
   patientId: string;
   appointmentId?: string;
+  templateId?: string;
   channel: string;
   type: string;
   recipient: string;
   message: string;
-  templateId?: string;
+  scheduledAt: string;
 }
 
 export interface CommunicationsApiClient {
-  list(params?: { page?: number; limit?: number; patientId?: string; appointmentId?: string; channel?: string; status?: string; startDate?: string; endDate?: string }): Promise<CommunicationsResponse>;
+  list(params?: {
+    page?: number;
+    limit?: number;
+    patientId?: string;
+    appointmentId?: string;
+    channel?: string;
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<{ items: Communication[]; pagination: any }>;
   getById(id: string): Promise<Communication>;
   getByPatient(patientId: string): Promise<Communication[]>;
   getByAppointment(appointmentId: string): Promise<Communication[]>;
-  create(data: CreateCommunicationDto): Promise<Communication>;
-  send(id: string): Promise<Communication>;
+  create(data: CommunicationCreateRequest): Promise<Communication>;
+  send(id: string): Promise<void>;
 }
 
 export const communicationsApi: CommunicationsApiClient = {
@@ -69,7 +60,7 @@ export const communicationsApi: CommunicationsApiClient = {
     if (params?.startDate) searchParams.set('startDate', params.startDate);
     if (params?.endDate) searchParams.set('endDate', params.endDate);
 
-    const response = await fetch(`${API_URL}/communications?${searchParams}`, {
+    const response = await authenticatedFetch(`${API_URL}/communications?${searchParams}`, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch communications');
@@ -77,7 +68,7 @@ export const communicationsApi: CommunicationsApiClient = {
   },
 
   async getById(id) {
-    const response = await fetch(`${API_URL}/communications/${id}`, {
+    const response = await authenticatedFetch(`${API_URL}/communications/${id}`, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch communication');
@@ -85,7 +76,7 @@ export const communicationsApi: CommunicationsApiClient = {
   },
 
   async getByPatient(patientId) {
-    const response = await fetch(`${API_URL}/communications/patient/${patientId}`, {
+    const response = await authenticatedFetch(`${API_URL}/communications/patient/${patientId}`, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch patient communications');
@@ -93,7 +84,7 @@ export const communicationsApi: CommunicationsApiClient = {
   },
 
   async getByAppointment(appointmentId) {
-    const response = await fetch(`${API_URL}/communications/appointment/${appointmentId}`, {
+    const response = await authenticatedFetch(`${API_URL}/communications/appointment/${appointmentId}`, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch appointment communications');
@@ -101,7 +92,7 @@ export const communicationsApi: CommunicationsApiClient = {
   },
 
   async create(data) {
-    const response = await fetch(`${API_URL}/communications`, {
+    const response = await authenticatedFetch(`${API_URL}/communications`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -111,11 +102,10 @@ export const communicationsApi: CommunicationsApiClient = {
   },
 
   async send(id) {
-    const response = await fetch(`${API_URL}/communications/${id}/send`, {
+    const response = await authenticatedFetch(`${API_URL}/communications/${id}/send`, {
       method: 'POST',
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to send communication');
-    return response.json();
   },
 };

@@ -1,12 +1,6 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
-function getAuthHeaders(): HeadersInit {
-  const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-  };
-}
+import { getAuthHeaders, authenticatedFetch } from './client';
 
 export type DocumentCategory = 'identity' | 'exams' | 'prescriptions' | 'reports' | 'administrative' | 'other';
 
@@ -90,7 +84,7 @@ export const documentsApi: DocumentsApiClient = {
     if (params?.endDate) searchParams.set('endDate', params.endDate);
     if (params?.search) searchParams.set('search', params.search);
 
-    const response = await fetch(`${API_URL}/documents?${searchParams}`, {
+    const response = await authenticatedFetch(`${API_URL}/documents?${searchParams}`, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch documents');
@@ -98,7 +92,7 @@ export const documentsApi: DocumentsApiClient = {
   },
 
   async getById(id) {
-    const response = await fetch(`${API_URL}/documents/${id}`, {
+    const response = await authenticatedFetch(`${API_URL}/documents/${id}`, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch document');
@@ -106,7 +100,7 @@ export const documentsApi: DocumentsApiClient = {
   },
 
   async getByPatient(patientId) {
-    const response = await fetch(`${API_URL}/documents/patient/${patientId}`, {
+    const response = await authenticatedFetch(`${API_URL}/documents/patient/${patientId}`, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch patient documents');
@@ -114,7 +108,7 @@ export const documentsApi: DocumentsApiClient = {
   },
 
   async getByAppointment(appointmentId) {
-    const response = await fetch(`${API_URL}/documents/appointment/${appointmentId}`, {
+    const response = await authenticatedFetch(`${API_URL}/documents/appointment/${appointmentId}`, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch appointment documents');
@@ -122,7 +116,7 @@ export const documentsApi: DocumentsApiClient = {
   },
 
   async create(data) {
-    const response = await fetch(`${API_URL}/documents`, {
+    const response = await authenticatedFetch(`${API_URL}/documents`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -132,7 +126,7 @@ export const documentsApi: DocumentsApiClient = {
   },
 
   async update(id, data) {
-    const response = await fetch(`${API_URL}/documents/${id}`, {
+    const response = await authenticatedFetch(`${API_URL}/documents/${id}`, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -142,7 +136,7 @@ export const documentsApi: DocumentsApiClient = {
   },
 
   async delete(id) {
-    const response = await fetch(`${API_URL}/documents/${id}`, {
+    const response = await authenticatedFetch(`${API_URL}/documents/${id}`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
     });

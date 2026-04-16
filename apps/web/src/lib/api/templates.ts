@@ -1,12 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+import { getAuthHeaders, authenticatedFetch } from './client';
 
-function getAuthHeaders(): HeadersInit {
-  const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-  };
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 export interface MessageTemplate {
   id: string;
@@ -63,7 +57,7 @@ export const templatesApi: TemplatesApiClient = {
     if (params?.type) searchParams.set('type', params.type);
     if (params?.isActive !== undefined) searchParams.set('isActive', String(params.isActive));
 
-    const response = await fetch(`${API_URL}/templates?${searchParams}`, {
+    const response = await authenticatedFetch(`${API_URL}/templates?${searchParams}`, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch templates');
@@ -71,7 +65,7 @@ export const templatesApi: TemplatesApiClient = {
   },
 
   async getById(id) {
-    const response = await fetch(`${API_URL}/templates/${id}`, {
+    const response = await authenticatedFetch(`${API_URL}/templates/${id}`, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch template');
@@ -79,7 +73,7 @@ export const templatesApi: TemplatesApiClient = {
   },
 
   async create(data) {
-    const response = await fetch(`${API_URL}/templates`, {
+    const response = await authenticatedFetch(`${API_URL}/templates`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -89,7 +83,7 @@ export const templatesApi: TemplatesApiClient = {
   },
 
   async update(id, data) {
-    const response = await fetch(`${API_URL}/templates/${id}`, {
+    const response = await authenticatedFetch(`${API_URL}/templates/${id}`, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -99,7 +93,7 @@ export const templatesApi: TemplatesApiClient = {
   },
 
   async delete(id) {
-    const response = await fetch(`${API_URL}/templates/${id}`, {
+    const response = await authenticatedFetch(`${API_URL}/templates/${id}`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
     });

@@ -9,7 +9,10 @@ import {
   TaskComment,
 } from '@clinica-saas/contracts';
 
-const BASE_URL = '/tasks';
+import { getAuthHeaders, authenticatedFetch } from './client';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const BASE_URL = `${API_URL}/tasks`;
 
 export const tasksApi = {
   list: async (params?: TaskListParams): Promise<TaskListResponse> => {
@@ -21,21 +24,25 @@ export const tasksApi = {
         }
       });
     }
-    const response = await fetch(`${BASE_URL}?${searchParams}`);
+    const response = await authenticatedFetch(`${BASE_URL}?${searchParams}`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error('Failed to fetch tasks');
     return response.json();
   },
 
   getById: async (id: string): Promise<Task> => {
-    const response = await fetch(`${BASE_URL}/${id}`);
+    const response = await authenticatedFetch(`${BASE_URL}/${id}`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error('Failed to fetch task');
     return response.json();
   },
 
   create: async (data: TaskCreateRequest): Promise<Task> => {
-    const response = await fetch(BASE_URL, {
+    const response = await authenticatedFetch(BASE_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to create task');
@@ -43,9 +50,9 @@ export const tasksApi = {
   },
 
   update: async (id: string, data: TaskUpdateRequest): Promise<Task> => {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+    const response = await authenticatedFetch(`${BASE_URL}/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to update task');
@@ -53,9 +60,9 @@ export const tasksApi = {
   },
 
   updateStatus: async (id: string, data: TaskStatusUpdateRequest): Promise<Task> => {
-    const response = await fetch(`${BASE_URL}/${id}/status`, {
+    const response = await authenticatedFetch(`${BASE_URL}/${id}/status`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to update task status');
@@ -63,14 +70,17 @@ export const tasksApi = {
   },
 
   delete: async (id: string): Promise<void> => {
-    const response = await fetch(`${BASE_URL}/${id}`, { method: 'DELETE' });
+    const response = await authenticatedFetch(`${BASE_URL}/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error('Failed to delete task');
   },
 
   addComment: async (id: string, data: TaskCommentCreateRequest): Promise<TaskComment> => {
-    const response = await fetch(`${BASE_URL}/${id}/comments`, {
+    const response = await authenticatedFetch(`${BASE_URL}/${id}/comments`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to add comment');
@@ -78,13 +88,17 @@ export const tasksApi = {
   },
 
   getByPatient: async (patientId: string): Promise<Task[]> => {
-    const response = await fetch(`${BASE_URL}/patient/${patientId}`);
+    const response = await authenticatedFetch(`${BASE_URL}/patient/${patientId}`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error('Failed to fetch patient tasks');
     return response.json();
   },
 
   getByAppointment: async (appointmentId: string): Promise<Task[]> => {
-    const response = await fetch(`${BASE_URL}/appointment/${appointmentId}`);
+    const response = await authenticatedFetch(`${BASE_URL}/appointment/${appointmentId}`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error('Failed to fetch appointment tasks');
     return response.json();
   },
