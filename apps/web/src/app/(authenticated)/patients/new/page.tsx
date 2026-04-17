@@ -6,8 +6,8 @@ import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import { patientsApi } from '@/lib/api/patients';
 import { PatientContactCreateRequest } from '@clinica-saas/contracts';
-import { PhoneInput } from '@/components/forms/phone-input';
-import { CepInput } from '@/components/forms/cep-input';
+import { PhoneInput, extractDigits as extractPhoneDigits } from '@/components/forms/phone-input';
+import { CepInput, extractDigits as extractCepDigits } from '@/components/forms/cep-input';
 
 interface ContactForm {
   name: string;
@@ -54,17 +54,32 @@ export default function NewPatientPage() {
     setError('');
     setSuccess('');
 
+    if (!form.name || form.name.trim().length < 2) {
+      setError('Nome deve ter pelo menos 2 caracteres');
+      return;
+    }
+
     const tags = tagsInput
       .split(',')
       .map((t) => t.trim())
       .filter((t) => t);
 
+    const phoneRaw = form.phone ? extractPhoneDigits(form.phone) : undefined;
+    const cepRaw = form.addressZipCode ? extractCepDigits(form.addressZipCode) : undefined;
+
     const payload = {
       ...form,
+      phone: phoneRaw || undefined,
+      addressZipCode: cepRaw || undefined,
       birthDate: form.birthDate ? new Date(form.birthDate).toISOString() : undefined,
       gender: form.gender || undefined,
       tags,
-      contacts: contacts.filter((c) => c.name && c.relationship) as PatientContactCreateRequest[],
+      contacts: contacts
+        .filter((c) => c.name && c.relationship)
+        .map((c) => ({
+          ...c,
+          phone: c.phone ? extractPhoneDigits(c.phone) : undefined,
+        })) as PatientContactCreateRequest[],
     };
 
     createMutation.mutate(payload);
@@ -159,6 +174,23 @@ export default function NewPatientPage() {
 
           <h3 className="text-lg font-semibold mb-4">Endereço</h3>
           <div className="grid grid-cols-3 gap-4 mb-6">
+            <div>
+              <CepInput
+                value={form.addressZipCode}
+                onChange={(value) => setForm({ ...form, addressZipCode: value })}
+                onAddressFill={({ street, district, city, state }) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    addressStreet: street,
+                    addressDistrict: district,
+                    addressCity: city,
+                    addressState: state,
+                  }));
+                }}
+                label="CEP"
+              />
+              <p className="text-xs text-gray-500 mt-1">Preencha para auto-completar</p>
+            </div>
             <div className="col-span-2">
               <label className="block text-sm font-medium mb-2">Rua</label>
               <input
@@ -211,22 +243,6 @@ export default function NewPatientPage() {
                 value={form.addressState}
                 onChange={(e) => setForm({ ...form, addressState: e.target.value })}
                 className="w-full px-4 py-2 border rounded"
-              />
-            </div>
-            <div>
-              <CepInput
-                value={form.addressZipCode}
-                onChange={(value) => setForm({ ...form, addressZipCode: value })}
-                onAddressFill={({ street, district, city, state }) => {
-                  setForm((prev) => ({
-                    ...prev,
-                    addressStreet: street,
-                    addressDistrict: district,
-                    addressCity: city,
-                    addressState: state,
-                  }));
-                }}
-                label="CEP"
               />
             </div>
           </div>

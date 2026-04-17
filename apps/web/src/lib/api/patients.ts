@@ -65,6 +65,15 @@ export const patientsApi: PatientsApiClient = {
   },
 
   async createPatient(data: PatientCreateRequest) {
+    console.log('[Patients API] Payload sendo enviado:', {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      document: data.document,
+      addressZipCode: data.addressZipCode,
+      contacts: data.contacts?.map(c => ({ name: c.name, phone: c.phone })),
+    });
+
     const res = await authenticatedFetch(`${API_URL}/patients`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -74,6 +83,7 @@ export const patientsApi: PatientsApiClient = {
 
     if (!res.ok) {
       const error = await res.json().catch(() => ({ message: 'Erro ao criar paciente' }));
+      console.error('[Patients API] Erro na resposta:', error);
       throw new Error(error.message);
     }
 

@@ -28,6 +28,10 @@ function formatCep(value: string): string {
   return `${digits.slice(0, 5)}-${digits.slice(5, 8)}`;
 }
 
+export function extractDigits(value: string): string {
+  return value.replace(/\D/g, '');
+}
+
 export const CepInput = forwardRef<HTMLInputElement, CepInputProps>(
   ({ value, onChange, onAddressFill, label, className, ...props }, ref) => {
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');

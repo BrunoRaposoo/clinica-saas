@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, type InputHTMLAttributes, useState, useCallback } from 'react';
+import { forwardRef, type InputHTMLAttributes, useState, useCallback, useImperativeHandle, useRef } from 'react';
 
 interface PhoneInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   value: string;
@@ -17,13 +17,16 @@ function formatPhone(value: string): string {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
 }
 
-function extractDigits(value: string): string {
+export function extractDigits(value: string): string {
   return value.replace(/\D/g, '');
 }
 
 export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
   ({ value, onChange, label, error, className, ...props }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useImperativeHandle(ref, () => inputRef.current!, []);
 
     const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       const formatted = formatPhone(e.target.value);
@@ -46,7 +49,7 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
           <label className="block text-sm font-medium text-gray-700">{label}</label>
         )}
         <input
-          ref={ref}
+          ref={inputRef}
           type="tel"
           value={displayValue}
           onChange={handleChange}
