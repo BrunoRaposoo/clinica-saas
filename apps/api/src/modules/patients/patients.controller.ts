@@ -43,6 +43,12 @@ export class PatientsController {
     @CurrentUser() user: TokenPayload,
     @Body() dto: CreatePatientDto,
   ) {
+    console.log('[Patients] Recebido payload:', {
+      name: dto.name,
+      phone: dto.phone,
+      zipCode: dto.addressZipCode,
+      contacts: dto.contacts?.map(c => ({ name: c.name, phone: c.phone })),
+    });
     return this.patientsService.create(organizationId, user.sub, dto);
   }
 

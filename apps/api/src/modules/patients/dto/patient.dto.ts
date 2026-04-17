@@ -1,25 +1,25 @@
-import { IsString, IsEmail, IsOptional, IsBoolean, IsDateString, IsArray, Min, Max, IsUUID, IsEnum } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsBoolean, IsDateString, IsArray, Min, Max, MinLength, MaxLength, IsUUID, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 
 export class PatientContactCreateDto {
   @ApiProperty({ example: 'Maria Silva' })
   @IsString()
-  @Min(2)
-  @Max(255)
+  @MinLength(2)
+  @MaxLength(255)
   name: string;
 
   @ApiProperty({ example: 'Mãe' })
   @IsString()
-  @Min(2)
-  @Max(100)
+  @MinLength(2)
+  @MaxLength(100)
   relationship: string;
 
   @ApiPropertyOptional({ example: '11988888888' })
   @IsOptional()
   @IsString()
-  @Min(10)
-  @Max(11)
+  @MinLength(10)
+  @MaxLength(11)
   phone?: string;
 
   @ApiPropertyOptional({ example: 'maria@email.com' })
@@ -37,22 +37,22 @@ export class PatientContactUpdateDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  @Min(2)
-  @Max(255)
+  @MinLength(2)
+  @MaxLength(255)
   name?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  @Min(2)
-  @Max(100)
+  @MinLength(2)
+  @MaxLength(100)
   relationship?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  @Min(10)
-  @Max(11)
+  @MinLength(10)
+  @MaxLength(11)
   phone?: string;
 
   @ApiPropertyOptional()
@@ -69,8 +69,8 @@ export class PatientContactUpdateDto {
 export class CreatePatientDto {
   @ApiProperty({ example: 'João Silva' })
   @IsString({ message: 'Nome deve ser uma string' })
-  @Min(2, { message: 'Nome deve ter pelo menos 2 caracteres' })
-  @Max(255, { message: 'Nome deve ter no máximo 255 caracteres' })
+  @MinLength(2, { message: 'Nome deve ter pelo menos 2 caracteres' })
+  @MaxLength(255, { message: 'Nome deve ter no máximo 255 caracteres' })
   name!: string;
 
   @ApiPropertyOptional({ example: 'joao@email.com' })
@@ -81,8 +81,8 @@ export class CreatePatientDto {
   @ApiPropertyOptional({ example: '11999999999' })
   @IsOptional()
   @IsString()
-  @Min(10)
-  @Max(11)
+  @MinLength(10)
+  @MaxLength(11)
   phone?: string;
 
   @ApiPropertyOptional({ example: '12345678900' })
@@ -133,8 +133,8 @@ export class CreatePatientDto {
   @ApiPropertyOptional({ example: '01234567' })
   @IsOptional()
   @IsString()
-  @Min(8)
-  @Max(8)
+  @MinLength(8)
+  @MaxLength(8)
   addressZipCode?: string;
 
   @ApiPropertyOptional()
@@ -158,8 +158,8 @@ export class UpdatePatientDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  @Min(2)
-  @Max(255)
+  @MinLength(2)
+  @MaxLength(255)
   name?: string;
 
   @ApiPropertyOptional()
@@ -170,8 +170,8 @@ export class UpdatePatientDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  @Min(10)
-  @Max(11)
+  @MinLength(10)
+  @MaxLength(11)
   phone?: string;
 
   @ApiPropertyOptional()
@@ -222,8 +222,8 @@ export class UpdatePatientDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  @Min(8)
-  @Max(8)
+  @MinLength(8)
+  @MaxLength(8)
   addressZipCode?: string;
 
   @ApiPropertyOptional()
