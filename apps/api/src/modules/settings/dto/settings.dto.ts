@@ -196,6 +196,16 @@ export class ProfessionalDto {
   @IsString()
   @MaxLength(50)
   registerNumber?: string;
+
+  @ApiPropertyOptional({ example: '#3B82F6' })
+  @IsOptional()
+  @IsString()
+  color?: string;
+
+  @ApiPropertyOptional({ example: 'uuid-do-tipo-de-atendimento' })
+  @IsOptional()
+  @IsString()
+  appointmentTypeId?: string;
 }
 
 export class UpdateProfessionalSettingsDto {
@@ -214,6 +224,16 @@ export class UpdateProfessionalSettingsDto {
   @ApiPropertyOptional()
   @IsOptional()
   isActive?: boolean;
+
+  @ApiPropertyOptional({ example: '#3B82F6' })
+  @IsOptional()
+  @IsString()
+  color?: string;
+
+  @ApiPropertyOptional({ example: 'uuid-do-tipo-de-atendimento' })
+  @IsOptional()
+  @IsString()
+  appointmentTypeId?: string;
 }
 
 export class SchedulePreferencesDto {

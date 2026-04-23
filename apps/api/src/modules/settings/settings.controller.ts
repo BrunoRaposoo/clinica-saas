@@ -38,21 +38,22 @@ export class SettingsController {
 
   @Get()
   @ApiOperation({ summary: 'Buscar configurações da organização' })
-  @ApiResponse({ status: 200, description: 'Configurações retornadas' })
   async getSettings(@CurrentOrganization() organizationId: string) {
+    console.log('[Settings] GET / configurações chamadas');
     return this.settingsService.getSettings(organizationId);
   }
 
   @Patch()
   @ApiOperation({ summary: 'Atualizar configurações da organização' })
-  @ApiResponse({ status: 200, description: 'Configurações atualizadas' })
   async updateSettings(
     @CurrentOrganization() organizationId: string,
     @Body() dto: UpdateOrganizationSettingsDto,
   ) {
+    console.log('[Settings] PATCH / configurações chamadas');
     return this.settingsService.updateSettings(organizationId, dto);
   }
 
+  // ==================== UNITS ====================
   @Get('units')
   @ApiOperation({ summary: 'Listar unidades' })
   @ApiQuery({ name: 'page', required: false, type: Number })
@@ -64,6 +65,7 @@ export class SettingsController {
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
     @Query('isActive') isActive?: string,
   ) {
+    console.log('[Settings] GET /units chamada');
     return this.settingsService.getUnits(
       organizationId,
       page,
@@ -74,45 +76,46 @@ export class SettingsController {
 
   @Post('units')
   @ApiOperation({ summary: 'Criar unidade' })
-  @ApiResponse({ status: 201, description: 'Unidade criada' })
   async createUnit(
     @CurrentOrganization() organizationId: string,
     @Body() dto: UnitDto,
   ) {
+    console.log('[Settings] POST /units chamada');
     return this.settingsService.createUnit(organizationId, dto);
   }
 
   @Get('units/:id')
   @ApiOperation({ summary: 'Detalhar unidade' })
-  @ApiResponse({ status: 200, description: 'Unidade retornada' })
   async getUnit(
     @Param('id') id: string,
     @CurrentOrganization() organizationId: string,
   ) {
+    console.log('[Settings] GET /units/:id chamada', id);
     return this.settingsService.getUnitById(id, organizationId);
   }
 
   @Patch('units/:id')
   @ApiOperation({ summary: 'Atualizar unidade' })
-  @ApiResponse({ status: 200, description: 'Unidade atualizada' })
   async updateUnit(
     @Param('id') id: string,
     @CurrentOrganization() organizationId: string,
     @Body() dto: UpdateUnitDto,
   ) {
+    console.log('[Settings] PATCH /units/:id chamada', id);
     return this.settingsService.updateUnit(id, organizationId, dto);
   }
 
   @Delete('units/:id')
   @ApiOperation({ summary: 'Desativar unidade' })
-  @ApiResponse({ status: 200, description: 'Unidade desativada' })
   async deleteUnit(
     @Param('id') id: string,
     @CurrentOrganization() organizationId: string,
   ) {
+    console.log('[Settings] DELETE /units/:id chamada', id);
     return this.settingsService.deleteUnit(id, organizationId);
   }
 
+  // ==================== SERVICE TYPES (geral ANTES de /:id) ====================
   @Get('service-types')
   @ApiOperation({ summary: 'Listar tipos de serviço' })
   @ApiQuery({ name: 'page', required: false, type: Number })
@@ -124,6 +127,7 @@ export class SettingsController {
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
     @Query('isActive') isActive?: string,
   ) {
+    console.log('[Settings] GET /service-types chamada - organizationId:', organizationId);
     return this.settingsService.getServiceTypes(
       organizationId,
       page,
@@ -134,45 +138,46 @@ export class SettingsController {
 
   @Post('service-types')
   @ApiOperation({ summary: 'Criar tipo de serviço' })
-  @ApiResponse({ status: 201, description: 'Tipo de serviço criado' })
   async createServiceType(
     @CurrentOrganization() organizationId: string,
     @Body() dto: ServiceTypeDto,
   ) {
+    console.log('[Settings] POST /service-types chamada');
     return this.settingsService.createServiceType(organizationId, dto);
   }
 
   @Get('service-types/:id')
   @ApiOperation({ summary: 'Detalhar tipo de serviço' })
-  @ApiResponse({ status: 200, description: 'Tipo de serviço retornado' })
   async getServiceType(
     @Param('id') id: string,
     @CurrentOrganization() organizationId: string,
   ) {
+    console.log('[Settings] GET /service-types/:id chamada', id);
     return this.settingsService.getServiceTypeById(id, organizationId);
   }
 
   @Patch('service-types/:id')
   @ApiOperation({ summary: 'Atualizar tipo de serviço' })
-  @ApiResponse({ status: 200, description: 'Tipo de serviço atualizado' })
   async updateServiceType(
     @Param('id') id: string,
     @CurrentOrganization() organizationId: string,
     @Body() dto: UpdateServiceTypeDto,
   ) {
+    console.log('[Settings] PATCH /service-types/:id chamada', id);
     return this.settingsService.updateServiceType(id, organizationId, dto);
   }
 
   @Delete('service-types/:id')
   @ApiOperation({ summary: 'Desativar tipo de serviço' })
-  @ApiResponse({ status: 200, description: 'Tipo de serviço desativado' })
   async deleteServiceType(
     @Param('id') id: string,
     @CurrentOrganization() organizationId: string,
   ) {
+    console.log('[Settings] DELETE /service-types/:id chamada', id);
     return this.settingsService.deleteServiceType(id, organizationId);
   }
 
+  // ==================== PROFESSIONALS (geral ANTES de /:id) ====================
   @Get('professionals')
   @ApiOperation({ summary: 'Listar profissionais' })
   @ApiQuery({ name: 'page', required: false, type: Number })
@@ -184,6 +189,7 @@ export class SettingsController {
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
     @Query('isActive') isActive?: string,
   ) {
+    console.log('[Settings] GET /professionals chamada - organizationId:', organizationId);
     return this.settingsService.getProfessionals(
       organizationId,
       page,
@@ -194,76 +200,78 @@ export class SettingsController {
 
   @Post('professionals')
   @ApiOperation({ summary: 'Criar profissional' })
-  @ApiResponse({ status: 201, description: 'Profissional criado' })
   async createProfessional(
     @CurrentOrganization() organizationId: string,
     @Body() dto: ProfessionalDto,
   ) {
+    console.log('[Settings] POST /professionals chamada - organizationId:', organizationId, 'dto:', dto);
     return this.settingsService.createProfessional(organizationId, dto);
   }
 
   @Get('professionals/:id')
   @ApiOperation({ summary: 'Detalhar profissional' })
-  @ApiResponse({ status: 200, description: 'Profissional retornado' })
   async getProfessional(
     @Param('id') id: string,
     @CurrentOrganization() organizationId: string,
   ) {
+    console.log('[Settings] GET /professionals/:id chamada', id);
     return this.settingsService.getProfessionalById(id, organizationId);
   }
 
   @Patch('professionals/:id')
   @ApiOperation({ summary: 'Atualizar profissional' })
-  @ApiResponse({ status: 200, description: 'Profissional atualizado' })
   async updateProfessional(
     @Param('id') id: string,
     @CurrentOrganization() organizationId: string,
     @Body() dto: UpdateProfessionalSettingsDto,
   ) {
+    console.log('[Settings] PATCH /professionals/:id chamada', id);
     return this.settingsService.updateProfessional(id, organizationId, dto);
   }
 
   @Delete('professionals/:id')
   @ApiOperation({ summary: 'Desativar profissional' })
-  @ApiResponse({ status: 200, description: 'Profissional desativado' })
   async deleteProfessional(
     @Param('id') id: string,
     @CurrentOrganization() organizationId: string,
   ) {
+    console.log('[Settings] DELETE /professionals/:id chamada', id);
     return this.settingsService.deleteProfessional(id, organizationId);
   }
 
+  // ==================== SCHEDULE PREFERENCES ====================
   @Get('schedule-preferences')
   @ApiOperation({ summary: 'Buscar preferências de agenda' })
-  @ApiResponse({ status: 200, description: 'Preferências retornadas' })
   async getSchedulePreferences(@CurrentOrganization() organizationId: string) {
+    console.log('[Settings] GET /schedule-preferences chamada');
     return this.settingsService.getSchedulePreferences(organizationId);
   }
 
   @Patch('schedule-preferences')
   @ApiOperation({ summary: 'Atualizar preferências de agenda' })
-  @ApiResponse({ status: 200, description: 'Preferências atualizadas' })
   async updateSchedulePreferences(
     @CurrentOrganization() organizationId: string,
     @Body() dto: SchedulePreferencesDto,
   ) {
+    console.log('[Settings] PATCH /schedule-preferences chamada');
     return this.settingsService.updateSchedulePreferences(organizationId, dto);
   }
 
+  // ==================== COMMUNICATION PREFERENCES ====================
   @Get('communication-preferences')
   @ApiOperation({ summary: 'Buscar preferências de comunicação' })
-  @ApiResponse({ status: 200, description: 'Preferências retornadas' })
   async getCommunicationPreferences(@CurrentOrganization() organizationId: string) {
+    console.log('[Settings] GET /communication-preferences chamada');
     return this.settingsService.getCommunicationPreferences(organizationId);
   }
 
   @Patch('communication-preferences')
   @ApiOperation({ summary: 'Atualizar preferências de comunicação' })
-  @ApiResponse({ status: 200, description: 'Preferências atualizadas' })
   async updateCommunicationPreferences(
     @CurrentOrganization() organizationId: string,
     @Body() dto: CommunicationPreferencesDto,
   ) {
+    console.log('[Settings] PATCH /communication-preferences chamada');
     return this.settingsService.updateCommunicationPreferences(organizationId, dto);
   }
 }

@@ -18,6 +18,7 @@ import { FinanceModule } from './modules/finance/finance.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { PrismaModule } from './common/prisma.module';
+import { SettingsModule } from './modules/settings/settings.module';
 import { SeedService } from './common/seed.service';
 import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
 
@@ -53,6 +54,7 @@ import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
     FinanceModule,
     DashboardModule,
     IntegrationsModule,
+    SettingsModule,
   ],
   providers: [SeedService, MetricsInterceptor],
 })
