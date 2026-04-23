@@ -174,9 +174,6 @@ var require_react_production_min = __commonJS({
     var U = { current: null };
     var V = { transition: null };
     var W = { ReactCurrentDispatcher: U, ReactCurrentBatchConfig: V, ReactCurrentOwner: K };
-    function X() {
-      throw Error("act(...) is not supported in production builds of React.");
-    }
     exports2.Children = { map: S, forEach: function(a, b, e) {
       S(a, function() {
         b.apply(this, arguments);
@@ -202,7 +199,6 @@ var require_react_production_min = __commonJS({
     exports2.StrictMode = q;
     exports2.Suspense = w;
     exports2.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = W;
-    exports2.act = X;
     exports2.cloneElement = function(a, b, e) {
       if (null === a || void 0 === a) throw Error("React.cloneElement(...): The argument must be a React element, but you passed " + a + ".");
       var d = C({}, a.props), c = a.key, k = a.ref, h = a._owner;
@@ -254,7 +250,9 @@ var require_react_production_min = __commonJS({
         V.transition = b;
       }
     };
-    exports2.unstable_act = X;
+    exports2.unstable_act = function() {
+      throw Error("act(...) is not supported in production builds of React.");
+    };
     exports2.useCallback = function(a, b) {
       return U.current.useCallback(a, b);
     };
@@ -299,7 +297,7 @@ var require_react_production_min = __commonJS({
     exports2.useTransition = function() {
       return U.current.useTransition();
     };
-    exports2.version = "18.3.1";
+    exports2.version = "18.2.0";
   }
 });
 
@@ -313,7 +311,7 @@ var require_react_development = __commonJS({
         if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart === "function") {
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
         }
-        var ReactVersion = "18.3.1";
+        var ReactVersion = "18.2.0";
         var REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element");
         var REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal");
         var REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment");
@@ -1249,7 +1247,7 @@ var require_react_development = __commonJS({
           }
           return lazyType;
         }
-        function forwardRef3(render) {
+        function forwardRef4(render) {
           {
             if (render != null && render.$$typeof === REACT_MEMO_TYPE) {
               error("forwardRef requires a render function but received a `memo` component. Instead of forwardRef(memo(...)), use memo(forwardRef(...)).");
@@ -2141,13 +2139,12 @@ var require_react_development = __commonJS({
         exports2.StrictMode = REACT_STRICT_MODE_TYPE;
         exports2.Suspense = REACT_SUSPENSE_TYPE;
         exports2.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = ReactSharedInternals;
-        exports2.act = act;
         exports2.cloneElement = cloneElement$1;
         exports2.createContext = createContext;
         exports2.createElement = createElement$1;
         exports2.createFactory = createFactory;
         exports2.createRef = createRef;
-        exports2.forwardRef = forwardRef3;
+        exports2.forwardRef = forwardRef4;
         exports2.isValidElement = isValidElement;
         exports2.lazy = lazy;
         exports2.memo = memo;
@@ -2221,7 +2218,7 @@ var require_react_jsx_runtime_development = __commonJS({
     if (process.env.NODE_ENV !== "production") {
       (function() {
         "use strict";
-        var React3 = require_react();
+        var React4 = require_react();
         var REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.element");
         var REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal");
         var REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment");
@@ -2247,7 +2244,7 @@ var require_react_jsx_runtime_development = __commonJS({
           }
           return null;
         }
-        var ReactSharedInternals = React3.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+        var ReactSharedInternals = React4.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
         function error(format) {
           {
             {
@@ -3014,7 +3011,6 @@ var require_react_jsx_runtime_development = __commonJS({
             }
           }
         }
-        var didWarnAboutKeySpread = {};
         function jsxWithValidation(type, props, key, isStaticChildren, source, self) {
           {
             var validType = isValidElementType(type);
@@ -3065,20 +3061,6 @@ var require_react_jsx_runtime_development = __commonJS({
                 }
               }
             }
-            {
-              if (hasOwnProperty.call(props, "key")) {
-                var componentName = getComponentNameFromType(type);
-                var keys = Object.keys(props).filter(function(k) {
-                  return k !== "key";
-                });
-                var beforeExample = keys.length > 0 ? "{key: someKey, " + keys.join(": ..., ") + ": ...}" : "{key: someKey}";
-                if (!didWarnAboutKeySpread[componentName + beforeExample]) {
-                  var afterExample = keys.length > 0 ? "{" + keys.join(": ..., ") + ": ...}" : "{}";
-                  error('A props object containing a "key" prop is being spread into JSX:\n  let props = %s;\n  <%s {...props} />\nReact keys must be passed directly to JSX without using spread:\n  let props = %s;\n  <%s key={someKey} {...props} />', beforeExample, componentName, afterExample, componentName);
-                  didWarnAboutKeySpread[componentName + beforeExample] = true;
-                }
-              }
-            }
             if (type === REACT_FRAGMENT_TYPE) {
               validateFragmentProps(element);
             } else {
@@ -3097,10 +3079,10 @@ var require_react_jsx_runtime_development = __commonJS({
             return jsxWithValidation(type, props, key, false);
           }
         }
-        var jsx3 = jsxWithValidationDynamic;
+        var jsx4 = jsxWithValidationDynamic;
         var jsxs = jsxWithValidationStatic;
         exports2.Fragment = REACT_FRAGMENT_TYPE;
-        exports2.jsx = jsx3;
+        exports2.jsx = jsx4;
         exports2.jsxs = jsxs;
       })();
     }
@@ -3129,6 +3111,7 @@ __export(src_exports, {
   CardFooter: () => CardFooter,
   CardHeader: () => CardHeader,
   CardTitle: () => CardTitle,
+  Input: () => Input,
   buttonVariants: () => buttonVariants
 });
 module.exports = __toCommonJS(src_exports);
@@ -3207,6 +3190,27 @@ var CardFooter = React2.forwardRef(
   ({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { ref, className: cn("flex items-center p-6 pt-0", className), ...props })
 );
 CardFooter.displayName = "CardFooter";
+
+// src/components/ui/input.tsx
+var React3 = __toESM(require_react());
+var import_jsx_runtime3 = __toESM(require_jsx_runtime());
+var Input = React3.forwardRef(
+  ({ className, type, ...props }, ref) => {
+    return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+      "input",
+      {
+        type,
+        className: cn(
+          "flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          className
+        ),
+        ref,
+        ...props
+      }
+    );
+  }
+);
+Input.displayName = "Input";
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Button,
@@ -3216,6 +3220,7 @@ CardFooter.displayName = "CardFooter";
   CardFooter,
   CardHeader,
   CardTitle,
+  Input,
   buttonVariants
 });
 /*! Bundled license information:

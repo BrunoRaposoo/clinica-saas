@@ -41,6 +41,7 @@ export class UsersController {
     @Body() dto: CreateUserDto,
     @CurrentOrganization() organizationId: string,
   ) {
+    console.log('[Users] Recebendo dados para criar usuário:', { email: dto.email, name: dto.name, roleId: dto.roleId });
     return this.usersService.create(dto, organizationId);
   }
 

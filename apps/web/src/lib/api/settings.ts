@@ -51,6 +51,9 @@ export interface Professional {
   user: { id: string; name: string; email: string };
   specialty?: string;
   registerNumber?: string;
+  color?: string;
+  appointmentTypeId?: string;
+  appointmentType?: { id: string; name: string; duration: number };
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -191,7 +194,7 @@ export const settingsApi = {
     return response.json();
   },
 
-  createProfessional: async (data: { userId: string; specialty?: string; registerNumber?: string }): Promise<Professional> => {
+  createProfessional: async (data: { userId: string; specialty?: string; registerNumber?: string; color?: string; appointmentTypeId?: string }): Promise<Professional> => {
     const response = await authenticatedFetch(`${API_URL}/settings/professionals`, {
       method: 'POST',
       body: JSON.stringify(data),

@@ -240,6 +240,8 @@ export class SettingsService {
         user: item.user,
         specialty: item.specialty,
         registerNumber: item.registerNumber,
+        color: item.color,
+        appointmentTypeId: item.appointmentTypeId,
         isActive: item.isActive,
         createdAt: item.createdAt,
         updatedAt: item.updatedAt,
@@ -264,6 +266,8 @@ export class SettingsService {
       user: professional.user,
       specialty: professional.specialty,
       registerNumber: professional.registerNumber,
+      color: professional.color,
+      appointmentTypeId: professional.appointmentTypeId,
       isActive: professional.isActive,
       createdAt: professional.createdAt,
       updatedAt: professional.updatedAt,
@@ -271,6 +275,8 @@ export class SettingsService {
   }
 
   async createProfessional(organizationId: string, dto: ProfessionalDto) {
+    console.log('[SettingsService] createProfessional called with:', { organizationId, dto });
+
     const existingUser = await this.prisma.user.findUnique({
       where: { id: dto.userId },
     });
@@ -288,7 +294,9 @@ export class SettingsService {
         organizationId,
         userId: dto.userId,
         specialty: dto.specialty,
-        appointmentTypeId: undefined,
+        registerNumber: dto.registerNumber,
+        color: dto.color,
+        appointmentTypeId: dto.appointmentTypeId,
       },
       include: {
         user: { select: { id: true, name: true, email: true } },
