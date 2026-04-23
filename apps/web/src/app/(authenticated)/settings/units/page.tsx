@@ -26,7 +26,11 @@ export default function SettingsUnitsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Unidades</h1>
+        <div>
+          <Link href="/settings" className="text-blue-600 hover:underline">
+            ← Voltar para Configurações
+          </Link>
+        </div>
         <Link
           href="/settings/units/new"
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
