@@ -181,7 +181,9 @@ apps/api/src/modules/audit/
 apps/web/src/app/(authenticated)/settings/
 ├── page.tsx
 ├── general/page.tsx
-├── units/page.tsx
+├── units/
+│   ├── page.tsx
+│   └── new/page.tsx
 ├── service-types/page.tsx
 ├── professionals/page.tsx
 ├── schedule/page.tsx
@@ -204,6 +206,9 @@ apps/web/src/app/(authenticated)/audit/
 
 ---
 
-**Versão**: 1.0.0
-**Data**: 2026-04-12
+**Versão**: 1.1.0
+**Data**: 2026-04-23
 **Status**: Implementado
+
+**Changelog:**
+- v1.1.0: Adicionada página units/new com formulário completo de criação de unidade
