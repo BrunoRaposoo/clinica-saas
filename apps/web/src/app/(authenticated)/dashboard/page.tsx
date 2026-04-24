@@ -13,25 +13,30 @@ import type { DashboardSummary, PeriodType } from '@clinica-saas/contracts';
 type Tab = 'finance' | 'schedule' | 'patients' | 'communications' | 'tasks';
 
 export default function DashboardPage() {
-  const [organizationId, setOrganizationId] = useState('');
   const [period, setPeriod] = useState<PeriodType>('current_month');
   const [data, setData] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('finance');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const orgId = localStorage.getItem('organizationId');
-    if (orgId) setOrganizationId(orgId);
-  }, []);
-
-  useEffect(() => {
-    if (organizationId) {
-      setLoading(true);
-      getDashboardSummary(organizationId, period)
-        .then(setData)
-        .finally(() => setLoading(false));
-    }
-  }, [organizationId, period]);
+    console.log('[Dashboard] Fetching dashboard, period:', period);
+    setLoading(true);
+    setError(null);
+    
+    getDashboardSummary(period)
+      .then((response) => {
+        console.log('[Dashboard] Response received:', response);
+        setData(response);
+      })
+      .catch((err) => {
+        console.error('[Dashboard] Error:', err);
+        setError(err.message || 'Erro ao buscar dados do dashboard');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [period]);
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'finance', label: 'Financeiro' },
@@ -62,13 +67,18 @@ export default function DashboardPage() {
 
       {loading ? (
         <p>Carregando...</p>
-      ) : data ? (
+      ) : error ? (
+        <div className="p-4 bg-red-100 text-red-700 rounded">
+          <p className="font-semibold">Erro ao carregar dashboard:</p>
+          <p>{error}</p>
+        </div>
+) : data ? (
         <div>
-          {activeTab === 'finance' && <FinanceTab data={data.finance} organizationId={organizationId} period={period} />}
-          {activeTab === 'schedule' && <ScheduleTab data={data.schedule} organizationId={organizationId} period={period} />}
-          {activeTab === 'patients' && <PatientsTab data={data.patients} organizationId={organizationId} period={period} />}
-          {activeTab === 'communications' && <CommunicationsTab data={data.communications} organizationId={organizationId} period={period} />}
-          {activeTab === 'tasks' && <TasksTab data={data.tasks} organizationId={organizationId} period={period} />}
+          {activeTab === 'finance' && <FinanceTab data={data.finance} period={period} />}
+          {activeTab === 'schedule' && <ScheduleTab data={data.schedule} period={period} />}
+          {activeTab === 'patients' && <PatientsTab data={data.patients} period={period} />}
+          {activeTab === 'communications' && <CommunicationsTab data={data.communications} period={period} />}
+          {activeTab === 'tasks' && <TasksTab data={data.tasks} period={period} />}
         </div>
       ) : (
         <p>Dados não disponíveis</p>

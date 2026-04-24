@@ -8,14 +8,13 @@ import { useState } from 'react';
 
 interface Props {
   data: ScheduleKPIs;
-  organizationId: string;
   period: PeriodType;
 }
 
-export function ScheduleTab({ data, organizationId, period }: Props) {
+export function ScheduleTab({ data, period }: Props) {
   const [drillDown, setDrillDown] = useState<{ status?: string } | null>(null);
 
-  const fetchData = () => getAppointmentsDrillDown(organizationId, { period, status: drillDown?.status });
+  const fetchData = () => getAppointmentsDrillDown({ period, status: drillDown?.status });
 
   return (
     <div>
