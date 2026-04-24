@@ -8,14 +8,13 @@ import { useState } from 'react';
 
 interface Props {
   data: CommunicationKPIs;
-  organizationId: string;
   period: PeriodType;
 }
 
-export function CommunicationsTab({ data, organizationId, period }: Props) {
+export function CommunicationsTab({ data, period }: Props) {
   const [drillDown, setDrillDown] = useState<{ status?: string } | null>(null);
 
-  const fetchData = () => getCommunicationsDrillDown(organizationId, { period, status: drillDown?.status });
+  const fetchData = () => getCommunicationsDrillDown({ period, status: drillDown?.status });
 
   return (
     <div>

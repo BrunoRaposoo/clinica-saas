@@ -8,14 +8,13 @@ import { useState } from 'react';
 
 interface Props {
   data: TaskKPIs;
-  organizationId: string;
   period: PeriodType;
 }
 
-export function TasksTab({ data, organizationId, period }: Props) {
+export function TasksTab({ data, period }: Props) {
   const [drillDown, setDrillDown] = useState<{ status?: string } | null>(null);
 
-  const fetchData = () => getTasksDrillDown(organizationId, { period, status: drillDown?.status });
+  const fetchData = () => getTasksDrillDown({ period, status: drillDown?.status });
 
   return (
     <div>

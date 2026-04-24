@@ -4,22 +4,26 @@ import { authenticatedFetch } from './client';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 export async function getDashboardSummary(
-  organizationId: string,
   period: PeriodType,
   startDate?: string,
   endDate?: string
 ): Promise<DashboardSummary> {
-  const params = new URLSearchParams({ period, organizationId });
+  const params = new URLSearchParams({ period });
   if (startDate) params.append('startDate', startDate);
   if (endDate) params.append('endDate', endDate);
 
+  console.log('[Dashboard API] getDashboardSummary, params:', params.toString());
   const res = await authenticatedFetch(`${API_URL}/dashboard/summary?${params}`);
-  if (!res.ok) throw new Error('Failed to fetch dashboard');
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Failed to fetch dashboard' }));
+    console.error('[Dashboard API] getDashboardSummary error:', error);
+    throw new Error(error.message || 'Failed to fetch dashboard');
+  }
   return res.json();
 }
 
-export async function getChargesDrillDown(organizationId: string, params: DrillDownParams & { page?: number; limit?: number }) {
-  const searchParams = new URLSearchParams({ period: params.period, organizationId });
+export async function getChargesDrillDown(params: DrillDownParams & { page?: number; limit?: number }) {
+  const searchParams = new URLSearchParams({ period: params.period });
   if (params.status) searchParams.append('status', params.status);
   if (params.startDate) searchParams.append('startDate', params.startDate);
   if (params.endDate) searchParams.append('endDate', params.endDate);
@@ -31,8 +35,8 @@ export async function getChargesDrillDown(organizationId: string, params: DrillD
   return res.json();
 }
 
-export async function getAppointmentsDrillDown(organizationId: string, params: DrillDownParams & { page?: number; limit?: number }) {
-  const searchParams = new URLSearchParams({ period: params.period, organizationId });
+export async function getAppointmentsDrillDown(params: DrillDownParams & { page?: number; limit?: number }) {
+  const searchParams = new URLSearchParams({ period: params.period });
   if (params.status) searchParams.append('status', params.status);
   if (params.professionalId) searchParams.append('professionalId', params.professionalId);
   if (params.startDate) searchParams.append('startDate', params.startDate);
@@ -45,8 +49,8 @@ export async function getAppointmentsDrillDown(organizationId: string, params: D
   return res.json();
 }
 
-export async function getPatientsDrillDown(organizationId: string, params: DrillDownParams & { page?: number; limit?: number }) {
-  const searchParams = new URLSearchParams({ period: params.period, organizationId });
+export async function getPatientsDrillDown(params: DrillDownParams & { page?: number; limit?: number }) {
+  const searchParams = new URLSearchParams({ period: params.period });
   if (params.status) searchParams.append('status', params.status);
   if (params.startDate) searchParams.append('startDate', params.startDate);
   if (params.endDate) searchParams.append('endDate', params.endDate);
@@ -58,8 +62,8 @@ export async function getPatientsDrillDown(organizationId: string, params: Drill
   return res.json();
 }
 
-export async function getCommunicationsDrillDown(organizationId: string, params: DrillDownParams & { page?: number; limit?: number }) {
-  const searchParams = new URLSearchParams({ period: params.period, organizationId });
+export async function getCommunicationsDrillDown(params: DrillDownParams & { page?: number; limit?: number }) {
+  const searchParams = new URLSearchParams({ period: params.period });
   if (params.status) searchParams.append('status', params.status);
   if (params.startDate) searchParams.append('startDate', params.startDate);
   if (params.endDate) searchParams.append('endDate', params.endDate);
@@ -71,8 +75,8 @@ export async function getCommunicationsDrillDown(organizationId: string, params:
   return res.json();
 }
 
-export async function getTasksDrillDown(organizationId: string, params: DrillDownParams & { page?: number; limit?: number }) {
-  const searchParams = new URLSearchParams({ period: params.period, organizationId });
+export async function getTasksDrillDown(params: DrillDownParams & { page?: number; limit?: number }) {
+  const searchParams = new URLSearchParams({ period: params.period });
   if (params.status) searchParams.append('status', params.status);
   if (params.startDate) searchParams.append('startDate', params.startDate);
   if (params.endDate) searchParams.append('endDate', params.endDate);
