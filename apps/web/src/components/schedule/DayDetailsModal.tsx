@@ -37,6 +37,33 @@ function formatDate(dateStr: string): string {
   });
 }
 
+function formatDateTime(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('pt-BR', {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+  }) + ' ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatPhone(phone?: string | null): string {
+  if (!phone) return '';
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length === 11) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  }
+  return phone;
+}
+
+function formatDocument(doc?: string | null): string {
+  if (!doc) return '';
+  const digits = doc.replace(/\D/g, '');
+  if (digits.length === 11) {
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+  }
+  return doc || '';
+}
+
 export function DayDetailsModal({ isOpen, onClose, date, slots }: DayDetailsModalProps) {
   if (!isOpen) return null;
 
@@ -59,35 +86,70 @@ export function DayDetailsModal({ isOpen, onClose, date, slots }: DayDetailsModa
           {appointments.length === 0 ? (
             <p className="text-center text-gray-500 py-8">Nenhum agendamento neste dia.</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {slots.map((slot) => {
                 const apt = slot.appointment;
                 if (!apt || !apt.patient) return null;
                 return (
-                  <div key={slot.time} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
+                  <div key={slot.time} className="border rounded-lg p-4 bg-gray-50">
+                    <div className="flex justify-between items-start mb-3">
                       <div>
-                        <span className="text-lg font-medium">{slot.time}</span>
-                        <span className="text-gray-600 ml-2">{apt.patient.name}</span>
+                        <span className="text-lg font-semibold">{slot.time}</span>
+                        <span className="text-gray-700 ml-2 text-lg">{apt.patient.name}</span>
                       </div>
-                      <span className={`px-2 py-1 rounded text-xs ${statusColors[apt.status]}`}>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${statusColors[apt.status]}`}>
                         {statusLabels[apt.status]}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: apt.professional?.color || '#3B82F6' }}
-                        />
-                        <span className="font-medium">{apt.professional?.name}</span>
-                        {apt.professional?.specialty && (
-                          <span className="text-gray-500">({apt.professional.specialty})</span>
+
+                    {apt.patient && (apt.patient.phone || apt.patient.email || apt.patient.document) && (
+                      <div className="mb-3 text-sm space-y-1">
+                        {apt.patient.phone && (
+                          <div className="text-gray-600">
+                            📞 {formatPhone(apt.patient.phone)}
+                          </div>
+                        )}
+                        {apt.patient.email && (
+                          <div className="text-gray-600">
+                            📧 {apt.patient.email}
+                          </div>
+                        )}
+                        {apt.patient.document && (
+                          <div className="text-gray-600">
+                            🔢 CPF: {formatDocument(apt.patient.document)}
+                          </div>
                         )}
                       </div>
-                      {apt.appointmentType?.name && (
-                        <span className="text-gray-500">• {apt.appointmentType.name}</span>
+                    )}
+
+                    <div className="flex items-center gap-2 mb-3">
+                      <span
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: apt.professional?.color || '#3B82F6' }}
+                      />
+                      <span className="font-medium">{apt.professional?.name}</span>
+                      {apt.professional?.specialty && (
+                        <span className="text-gray-500">- {apt.professional.specialty}</span>
                       )}
+                    </div>
+
+                    <div className="flex items-center gap-2 mb-3 text-sm text-gray-600">
+                      {apt.appointmentType?.duration && (
+                        <span>⏱️ {apt.appointmentType.duration} min</span>
+                      )}
+                      {apt.appointmentType?.name && (
+                        <span>• {apt.appointmentType.name}</span>
+                      )}
+                    </div>
+
+                    {apt.notes && (
+                      <div className="mb-3 text-sm text-gray-600 bg-white p-2 rounded border">
+                        <span className="font-medium">📝</span> {apt.notes}
+                      </div>
+                    )}
+
+                    <div className="text-xs text-gray-400">
+                      📅 {formatDateTime(apt.startDate)}
                     </div>
                   </div>
                 );
