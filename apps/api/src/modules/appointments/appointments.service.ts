@@ -343,8 +343,15 @@ export class AppointmentsService {
             time: timeStr,
             appointment: {
               id: appointment.id,
-              patient: appointment.patient.name,
-              professional: appointment.professional.user.name,
+              patient: { name: appointment.patient.name },
+              professional: {
+                name: appointment.professional.user.name,
+                specialty: appointment.professional.specialty,
+                color: appointment.professional.color,
+              },
+              appointmentType: appointment.appointmentType
+                ? { name: appointment.appointmentType.name }
+                : undefined,
               startDate: appointment.startDate.toISOString(),
               endDate: appointment.endDate.toISOString(),
               status: appointment.status,

@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { appointmentsApi, professionalsApi, scheduleBlocksApi } from '@/lib/api/appointments';
+import { appointmentsApi, professionalsApi } from '@/lib/api/appointments';
 import { CalendarResponse, AppointmentStatus } from '@clinica-saas/contracts';
+import { DayDetailsModal } from '@/components/schedule/DayDetailsModal';
 
 const statusLabels: Record<AppointmentStatus, string> = {
   scheduled: 'Agendado',
@@ -28,6 +29,7 @@ export default function SchedulePage() {
   const [view, setView] = useState<'day' | 'week' | 'month'>('week');
   const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
   const [professionalId, setProfessionalId] = useState<string>('');
+  const [selectedDay, setSelectedDay] = useState<{ date: string; slots: any[] } | null>(null);
 
   const getDateRange = () => {
     const date = new Date(currentDate);
@@ -147,48 +149,68 @@ export default function SchedulePage() {
         {calendarLoading ? (
           <div className="p-8 text-center">Carregando...</div>
         ) : calendar?.days && calendar.days.length > 0 ? (
-          calendar.days.map((day) => (
-            <div key={day.date} className="border-b p-4">
-              <h3 className="font-semibold mb-3">
-                {formatDate(day.date)} ({day.slots.length} horários)
-              </h3>
-              <div className="grid grid-cols-4 gap-2">
-                {day.slots.map((slot) => (
-                  <div
-                    key={slot.time}
-                    className={`p-2 rounded text-sm ${
-                      slot.appointment
-                        ? 'bg-blue-50 border border-blue-200'
-                        : slot.blocked
-                        ? 'bg-red-50 border border-red-200'
-                        : 'bg-green-50 border border-green-200'
-                    }`}
+          calendar.days.map((day) => {
+              const appointmentCount = day.slots.filter((s) => s.appointment).length;
+              return (
+                <div key={day.date} className="border-b p-4">
+                  <h3
+                    className="font-semibold mb-3 cursor-pointer hover:text-blue-600 flex items-center gap-2"
+                    onClick={() => setSelectedDay({ date: day.date, slots: day.slots })}
                   >
-                    <div className="font-medium">{slot.time}</div>
-                    {slot.appointment && (
-                      <div className="text-xs mt-1">
-                        <div className="truncate">{slot.appointment.patient?.name}</div>
-                        <div className="text-gray-500">{slot.appointment.professional?.name}</div>
-                        <span className={statusColors[slot.appointment.status]}>
-                          {statusLabels[slot.appointment.status]}
-                        </span>
+                    <span>
+                      {formatDate(day.date)} ({appointmentCount})
+                    </span>
+                    {appointmentCount > 0 && (
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+                        {appointmentCount} agendamento{appointmentCount !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </h3>
+                  <div className="grid grid-cols-4 gap-2">
+                    {day.slots.map((slot) => (
+                      <div
+                        key={slot.time}
+                        className={`p-2 rounded text-sm ${
+                          slot.appointment
+                            ? 'bg-blue-50 border border-blue-200'
+                            : slot.blocked
+                            ? 'bg-red-50 border border-red-200'
+                            : 'bg-green-50 border border-green-200'
+                        }`}
+                      >
+                        <div className="font-medium">{slot.time}</div>
+                        {slot.appointment && (
+                          <div className="text-xs mt-1">
+                            <div className="truncate">{slot.appointment.patient?.name}</div>
+                            <div className="text-gray-500">{slot.appointment.professional?.name}</div>
+                            <span className={statusColors[slot.appointment.status]}>
+                              {statusLabels[slot.appointment.status]}
+                            </span>
+                          </div>
+                        )}
+                        {slot.blocked && (
+                          <div className="text-xs text-red-500 mt-1">{slot.blocked.reason}</div>
+                        )}
+                        {!slot.appointment && !slot.blocked && (
+                          <div className="text-xs text-green-500 mt-1">Disponível</div>
+                        )}
                       </div>
-                    )}
-                    {slot.blocked && (
-                      <div className="text-xs text-red-500 mt-1">{slot.blocked.reason}</div>
-                    )}
-                    {!slot.appointment && !slot.blocked && (
-                      <div className="text-xs text-green-500 mt-1">Disponível</div>
-                    )}
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          ))
+                </div>
+              );
+            })
         ) : (
           <div className="p-8 text-center text-gray-500">Nenhum agendamento neste período.</div>
         )}
       </div>
+
+      <DayDetailsModal
+        isOpen={!!selectedDay}
+        onClose={() => setSelectedDay(null)}
+        date={selectedDay?.date || ''}
+        slots={selectedDay?.slots || []}
+      />
     </div>
   );
 }
