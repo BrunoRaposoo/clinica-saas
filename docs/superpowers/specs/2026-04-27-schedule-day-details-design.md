@@ -1,8 +1,8 @@
 # SPEC: Detalhamento de Agendamentos na Agenda
 
 **Data:** 2026-04-27
-**Status:** Aprovado
-**Abordagem:**Modal com Details
+**Status:** Implementado ✓
+**Abordagem:** Modal com Details
 
 ---
 

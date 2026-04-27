@@ -21,6 +21,16 @@ clinica-saas/
 └── infra/          # Configurações de infraestrutura
 ```
 
+## Regras de Git
+
+**NÃO fazer operações de git diretamente no projeto.**
+
+- Não executar comandos git (push, pull, merge, rebase, etc)
+- Não criar worktrees no projeto
+- Todas as operações de git devem ser Feitas manualmente pelo usuário
+
+Se precisar de alguma operação git, informe o usuário e aguarde instrução.
+
 ## Regras Gerais
 
 ### Padrões de Código
@@ -29,10 +39,6 @@ clinica-saas/
 - Nomenclatura: camelCase (variáveis), PascalCase (classes/componentes), kebab-case (arquivos)
 - Importações absolutas usando path aliases (@clinica-saas/*)
 
-### Commits
--Conventional commits (feat:, fix:, docs:, refactor:)
-- Uma feature por branch
-- Squash ao merge
 
 ### Revisões
 - Todas as mudanças precisam de review
