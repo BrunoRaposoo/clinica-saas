@@ -307,10 +307,10 @@ export class AppointmentsService {
     const where: any = { organizationId, startDate: { gte: start }, endDate: { lte: end } };
     if (professionalId) where.professionalId = professionalId;
 
-    const appointments = await this.prisma.appointment.findMany({
+const appointments = await this.prisma.appointment.findMany({
       where,
       include: {
-        patient: { select: { id: true, name: true } },
+        patient: { select: { id: true, name: true, phone: true, email: true, document: true } },
         professional: { include: { user: { select: { name: true } } } },
         appointmentType: true,
       },
@@ -343,15 +343,24 @@ export class AppointmentsService {
             time: timeStr,
             appointment: {
               id: appointment.id,
-              patient: { name: appointment.patient.name },
+              patient: {
+                name: appointment.patient.name,
+                phone: appointment.patient.phone,
+                email: appointment.patient.email,
+                document: appointment.patient.document,
+              },
               professional: {
                 name: appointment.professional.user.name,
                 specialty: appointment.professional.specialty,
                 color: appointment.professional.color,
               },
               appointmentType: appointment.appointmentType
-                ? { name: appointment.appointmentType.name }
+                ? {
+                    name: appointment.appointmentType.name,
+                    duration: appointment.appointmentType.duration,
+                  }
                 : undefined,
+              notes: appointment.notes,
               startDate: appointment.startDate.toISOString(),
               endDate: appointment.endDate.toISOString(),
               status: appointment.status,
