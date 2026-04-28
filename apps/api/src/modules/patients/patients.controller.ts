@@ -1,6 +1,8 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/guards/roles.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CurrentOrganization } from '../../common/decorators/current-organization.decorator';
 import { PatientsService } from './patients.service';
@@ -9,12 +11,13 @@ import { TokenPayload } from '@clinica-saas/contracts';
 
 @ApiTags('Patients')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('patients')
 export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
 
   @Get()
+  @Roles('super_admin', 'org_admin', 'receptionist', 'professional')
   @ApiOperation({ summary: 'Listar pacientes' })
   @ApiResponse({ status: 200, description: 'Lista de pacientes retornada com sucesso' })
   async findAll(
@@ -25,6 +28,7 @@ export class PatientsController {
   }
 
   @Get(':id')
+  @Roles('super_admin', 'org_admin', 'receptionist', 'professional')
   @ApiOperation({ summary: 'Detalhar paciente' })
   @ApiResponse({ status: 200, description: 'Paciente retornado com sucesso' })
   @ApiResponse({ status: 404, description: 'Paciente não encontrado' })
@@ -36,6 +40,7 @@ export class PatientsController {
   }
 
   @Post()
+  @Roles('super_admin', 'org_admin', 'receptionist')
   @ApiOperation({ summary: 'Criar paciente' })
   @ApiResponse({ status: 201, description: 'Paciente criado com sucesso' })
   async create(
@@ -53,6 +58,7 @@ export class PatientsController {
   }
 
   @Patch(':id')
+  @Roles('super_admin', 'org_admin', 'receptionist')
   @ApiOperation({ summary: 'Atualizar paciente' })
   @ApiResponse({ status: 200, description: 'Paciente atualizado com sucesso' })
   @ApiResponse({ status: 404, description: 'Paciente não encontrado' })
@@ -66,6 +72,7 @@ export class PatientsController {
   }
 
   @Delete(':id')
+  @Roles('super_admin', 'org_admin')
   @ApiOperation({ summary: 'Excluir paciente (soft delete)' })
   @ApiResponse({ status: 200, description: 'Paciente excluído com sucesso' })
   @ApiResponse({ status: 404, description: 'Paciente não encontrado' })
@@ -78,6 +85,7 @@ export class PatientsController {
   }
 
   @Get(':id/contacts')
+  @Roles('super_admin', 'org_admin', 'receptionist', 'professional')
   @ApiOperation({ summary: 'Listar contatos do paciente' })
   @ApiResponse({ status: 200, description: 'Contatos retornados com sucesso' })
   async getContacts(
@@ -88,6 +96,7 @@ export class PatientsController {
   }
 
   @Post(':id/contacts')
+  @Roles('super_admin', 'org_admin', 'receptionist')
   @ApiOperation({ summary: 'Criar contato do paciente' })
   @ApiResponse({ status: 201, description: 'Contato criado com sucesso' })
   async createContact(
@@ -99,6 +108,7 @@ export class PatientsController {
   }
 
   @Patch('contacts/:contactId')
+  @Roles('super_admin', 'org_admin', 'receptionist')
   @ApiOperation({ summary: 'Atualizar contato' })
   @ApiResponse({ status: 200, description: 'Contato atualizado com sucesso' })
   async updateContact(
@@ -110,6 +120,7 @@ export class PatientsController {
   }
 
   @Delete('contacts/:contactId')
+  @Roles('super_admin', 'org_admin')
   @ApiOperation({ summary: 'Excluir contato' })
   @ApiResponse({ status: 200, description: 'Contato excluído com sucesso' })
   async deleteContact(
@@ -120,6 +131,7 @@ export class PatientsController {
   }
 
   @Get(':id/audit')
+  @Roles('super_admin', 'org_admin', 'receptionist', 'professional')
   @ApiOperation({ summary: 'Ver histórico de alterações' })
   @ApiResponse({ status: 200, description: 'Histórico retornado com sucesso' })
   async getAudit(

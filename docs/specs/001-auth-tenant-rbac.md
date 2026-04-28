@@ -384,9 +384,65 @@ Response (200):
 - **Email**: Mock via interface IEmailService (console.log + arquivo local)
 - **Testes**: Jest (backend)
 - **Estilo**: TypeScript strict + ESLint + Prettier
+- **RolesGuard**: Obrigatório em todas as rotas não-públicas (ver docs/superpowers/specs/2026-04-28-rolesguard-access-control-design.md)
 
-## 18. Histórico de Versões
+## 18. Matriz de Acesso por Role
+
+### Papéis do Sistema:
+| Role | Descrição |
+|------|-----------|
+| `super_admin` | Administrador do sistema - todas as operações |
+| `org_admin` | Administrador da organização - CRUD completo |
+| `receptionist` | Recepcionista - CRUD pacientes, appointments, documents |
+| `professional` | Profissional de saúde - leituras + operações próprias |
+| `support` | Suporte técnico - somente leitura |
+
+### patients:
+| Role | Ler | Criar | Editar | Excluir |
+|------|-----|------|-------|--------|
+| super_admin | ✓ | ✓ | ✓ | ✓ |
+| org_admin | ✓ | ✓ | ✓ | ✓ |
+| receptionist | ✓ | ✓ | ✓ | ✗ |
+| professional | ✓ | ✗ | ✗ | ✗ |
+
+**Endpoints patients detalhados:**
+- GET /patients, GET /patients/:id, GET /patients/:id/contacts, GET /patients/:id/audit → super_admin, org_admin, receptionist, professional
+- POST /patients → super_admin, org_admin, receptionist
+- PATCH /patients/:id → super_admin, org_admin, receptionist
+- DELETE /patients/:id → super_admin, org_admin
+
+### appointments:
+| Role | Ler | Criar | Editar |
+|------|-----|------|-------|
+| super_admin | ✓ | ✓ | ✓ |
+| org_admin | ✓ | ✓ | ✓ |
+| receptionist | ✓ | ✓ | ✓ |
+| professional | próprios | próprios | próprios |
+
+### settings:
+| Role | Ler | Editar |
+|------|-----|-------|
+| super_admin | ✓ | ✓ |
+| org_admin | ✓ | ✓ |
+| receptionist | ✓ | ✗ |
+| professional | ✓ | ✗ |
+
+### users:
+| Role | Ler | Criar | Editar |
+|------|-----|------|-------|
+| super_admin | ✓ | ✓ | ✓ |
+| org_admin | ✓ | ✓ | ✓ |
+| receptionist | ✓ | ✓ | ✗ |
+
+### organizations, roles:
+| Role | Acesso |
+|------|--------|
+| super_admin | ✓ (CRUD completo) |
+| org_admin | ✗ |
+
+## 19. Histórico de Versões
 
 | Versão | Data | Descrição |
 |--------|------|------------|
 | 1.0.0 | 2026-04-08 | Initial spec - Auth, Tenant, RBAC |
+| 1.1.0 | 2026-04-28 | Adicionada matriz de acesso e RolesGuard |

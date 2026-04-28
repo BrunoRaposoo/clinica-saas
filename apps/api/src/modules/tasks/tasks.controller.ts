@@ -12,6 +12,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/guards/roles.guard';
 import { TasksService } from './tasks.service';
 import {
   CreateTaskDto,
@@ -26,7 +28,8 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 @ApiTags('Tasks')
 @Controller('tasks')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('super_admin', 'org_admin', 'receptionist', 'professional')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 

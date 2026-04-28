@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { settingsApi, type Professional, type ServiceType } from '@/lib/api/settings';
 import { usersApi } from '@/lib/api/users';
 import { PasswordInput } from '@/components/forms/password-input';
+import { useRole } from '@/hooks/use-role';
 
 interface ProfessionalForm {
   name: string;
@@ -30,6 +31,7 @@ function validateEmail(email: string): { valid: boolean; message: string } {
 }
 
 export default function ProfessionalsPage() {
+  const { canManageSettings } = useRole();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<ProfessionalForm>({
@@ -43,6 +45,18 @@ export default function ProfessionalsPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState('');
+
+  if (!canManageSettings) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6">Profissionais</h1>
+        <p className="text-gray-500">Você não tem acesso a esta página.</p>
+        <Link href="/settings" className="text-blue-600 hover:underline mt-4 block">
+          ← Voltar para Configurações
+        </Link>
+      </div>
+    );
+  }
 
   const { data: professionals, isLoading: loadingProfessionals } = useQuery({
     queryKey: ['professionals'],

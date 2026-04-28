@@ -2,12 +2,15 @@ import { Controller, Get, Post, Body, Param, Query, UseGuards, Patch, Delete } f
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { DocumentsService, ListDocumentsQueryDto, CreateDocumentDto, UpdateDocumentDto } from './documents.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/guards/roles.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CurrentOrganization } from '../../common/decorators/current-organization.decorator';
 
 @ApiTags('Documents')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('super_admin', 'org_admin', 'receptionist', 'professional')
 @Controller('documents')
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}

@@ -1,26 +1,36 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from '@/providers/session-provider';
+import { useRole } from '@/hooks/use-role';
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-  { href: '/patients', label: 'Pacientes', icon: '👥' },
-  { href: '/schedule', label: 'Agenda', icon: '📅' },
-  { href: '/appointments', label: 'Agendamentos', icon: '🗓️' },
+const navItemsBase = [
+  { href: '/dashboard', label: 'Dashboard', icon: '📊', allowedRoles: ['super_admin', 'org_admin', 'receptionist', 'professional', 'support'] },
+  { href: '/patients', label: 'Pacientes', icon: '👥', allowedRoles: ['super_admin', 'org_admin', 'receptionist', 'professional', 'support'] },
+  { href: '/schedule', label: 'Agenda', icon: '📅', allowedRoles: ['super_admin', 'org_admin', 'receptionist', 'professional', 'support'] },
+  { href: '/appointments', label: 'Agendamentos', icon: '🗓️', allowedRoles: ['super_admin', 'org_admin', 'receptionist', 'professional', 'support'] },
 ];
 
 const bottomNavItems = [
-  { href: '/settings', label: 'Configurações', icon: '⚙️' },
+  { href: '/settings', label: 'Configurações', icon: '⚙️', allowedRoles: ['super_admin', 'org_admin', 'receptionist'] },
 ];
 
 export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading, isAuthenticated } = useSession();
+  const { hasRole } = useRole();
   const router = useRouter();
   const pathname = usePathname();
   const [isInitialized, setIsInitialized] = useState(false);
+
+  const navItems = useMemo(() => {
+    return navItemsBase.filter(item => hasRole(item.allowedRoles));
+  }, [hasRole]);
+
+  const filteredBottomNavItems = useMemo(() => {
+    return bottomNavItems.filter(item => hasRole(item.allowedRoles));
+  }, [hasRole]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -67,7 +77,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
         </nav>
         
         <div className="border-t mt-auto">
-          {bottomNavItems.map((item) => (
+          {filteredBottomNavItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}

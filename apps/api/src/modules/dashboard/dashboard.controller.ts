@@ -1,11 +1,14 @@
 import { Controller, Get, Query, UseGuards, Logger } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/guards/roles.guard';
 import { DashboardService } from './dashboard.service';
 import { DashboardPeriodDto, DrillDownQueryDto } from './dto/dashboard.dto';
 import { CurrentOrganization } from '../../common/decorators/current-organization.decorator';
 
 @Controller('dashboard')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('super_admin', 'org_admin', 'receptionist', 'professional', 'support')
 export class DashboardController {
   private readonly logger = new Logger(DashboardController.name);
 

@@ -26,7 +26,13 @@ apps/api/src/
 │       └── entities/
 ├── common/              # Componentes compartilhados
 │   ├── guards/          # Guards de autenticação/autorização
+│   │   ├── jwt-auth.guard.ts   # Obrigatório em todas rotas não-públicas
+│   │   ├── roles.guard.ts    # Obrigatório além de JwtAuthGuard
+│   │   └── rate-limit.guard.ts
 │   ├── decorators/     # Decoradores customizados
+│   │   ├── roles.decorator.ts  # @Roles('org_admin', 'receptionist')
+│   │   ├── current-user.decorator.ts
+│   │   └── current-organization.decorator.ts
 │   ├── strategies/     # Passport strategies
 │   ├── filters/        # Filtros de exceção
 │   ├── interceptors/   # Interceptadores
@@ -50,6 +56,18 @@ apps/api/src/
 - Access token: 15min, Refresh token: 7 dias
 - Password hasheada com bcrypt (cost 12)
 - Rate limiting in-memory (5 tentativas/15min)
+
+### Controle de Acesso (RolesGuard)
+- TODAS as rotas não-públicas DEVEM usar RolesGuard além de JwtAuthGuard
+- Decorador @Roles é.obrigatório em cada controller
+- Ver docs/superpowers/specs/2026-04-28-rolesguard-access-control-design.md
+
+**Ordem de implementação incremental:**
+1. Fase 1 (alta): settings, organizations, roles
+2. Fase 2 (média): users, patients, appointments
+3. Fase 3 (baixa): documents, dashboard, tasks
+
+**Roles válidas:** super_admin, org_admin, receptionist, professional, support
 
 ### Validação
 - Usar class-validator nos DTOs

@@ -4,11 +4,25 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { settingsApi } from '@/lib/api/settings';
+import { useRole } from '@/hooks/use-role';
 
 export default function SettingsUnitsPage() {
+  const { canManageSettings } = useRole();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [showActive, setShowActive] = useState<boolean | null>(null);
+
+  if (!canManageSettings) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6">Unidades</h1>
+        <p className="text-gray-500">Você não tem acesso a esta página.</p>
+        <Link href="/settings" className="text-blue-600 hover:underline mt-4 block">
+          ← Voltar para Configurações
+        </Link>
+      </div>
+    );
+  }
 
   const { data, isLoading } = useQuery({
     queryKey: ['units', { page, isActive: showActive }],

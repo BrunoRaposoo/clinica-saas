@@ -6,10 +6,13 @@ import { setTokens, clearTokens, getAccessToken, getRefreshToken, hasTokens, cle
 
 interface SessionContextType {
   user: AuthUserResponse | null;
+  role: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  hasRole: (roles: string[]) => boolean;
+  isRole: (role: string) => boolean;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -76,8 +79,29 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const role = user?.roleName || null;
+
+  const hasRole = (roles: string[]): boolean => {
+    return role ? roles.includes(role) : false;
+  };
+
+  const isRole = (roleToCheck: string): boolean => {
+    return role === roleToCheck;
+  };
+
   return (
-    <SessionContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, logout }}>
+    <SessionContext.Provider
+      value={{
+        user,
+        role,
+        isLoading,
+        isAuthenticated: !!user,
+        login,
+        logout,
+        hasRole,
+        isRole,
+      }}
+    >
       {children}
     </SessionContext.Provider>
   );
