@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { settingsApi } from '@/lib/api/settings';
 import { PhoneInput, extractDigits as extractPhoneDigits } from '@/components/forms/phone-input';
 import { CepInput, extractDigits as extractCepDigits } from '@/components/forms/cep-input';
+import { RoleGuard } from '@/components/role-guard';
+import { useRole } from '@/hooks/use-role';
 
 function validateEmail(email: string): { valid: boolean; message: string } {
   if (!email) return { valid: false, message: '' };
@@ -28,11 +30,24 @@ interface AddressData {
 }
 
 export default function SettingsGeneralPage() {
+  const { canManageSettings } = useRole();
   const queryClient = useQueryClient();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState('');
+
+  if (!canManageSettings) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6">Configurações Gerais</h1>
+        <p className="text-gray-500">Você não tem acesso a esta página.</p>
+        <Link href="/settings" className="text-blue-600 hover:underline mt-4 block">
+          ← Voltar para Configurações
+        </Link>
+      </div>
+    );
+  }
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['settings'],

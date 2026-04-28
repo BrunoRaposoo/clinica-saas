@@ -6,8 +6,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { patientsApi } from '@/lib/api/patients';
 import { Patient } from '@clinica-saas/contracts';
+import { useRole } from '@/hooks/use-role';
 
 export default function PatientDetailPage() {
+  const { canManagePatients, isOrgAdmin, isSuperAdmin } = useRole();
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -78,45 +80,49 @@ export default function PatientDetailPage() {
       <div className="bg-white rounded-lg shadow p-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Detalhes do Paciente</h2>
-          <div className="flex gap-2">
-            {!isEditing ? (
-              <button
-                onClick={() => {
-                  setForm(patient);
-                  setIsEditing(true);
-                }}
-                className="px-4 py-2 border rounded hover:bg-gray-50"
-              >
-                Editar
-              </button>
-            ) : (
-              <>
+          {canManagePatients && (
+            <div className="flex gap-2">
+              {!isEditing ? (
                 <button
-                  onClick={handleSave}
-                  disabled={updateMutation.isPending}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {updateMutation.isPending ? 'Salvando...' : 'Salvar'}
-                </button>
-                <button
-                  onClick={() => setIsEditing(false)}
+                  onClick={() => {
+                    setForm(patient);
+                    setIsEditing(true);
+                  }}
                   className="px-4 py-2 border rounded hover:bg-gray-50"
                 >
-                  Cancelar
+                  Editar
                 </button>
-              </>
-            )}
-            <button
-              onClick={() => {
-                if (confirm('Tem certeza que deseja excluir este paciente?')) {
-                  deleteMutation.mutate();
-                }
-              }}
-              className="px-4 py-2 text-red-600 hover:text-red-800"
-            >
-              Excluir
-            </button>
-          </div>
+              ) : (
+                <>
+                  <button
+                    onClick={handleSave}
+                    disabled={updateMutation.isPending}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {updateMutation.isPending ? 'Salvando...' : 'Salvar'}
+                  </button>
+                  <button
+                    onClick={() => setIsEditing(false)}
+                    className="px-4 py-2 border rounded hover:bg-gray-50"
+                  >
+                    Cancelar
+                  </button>
+                </>
+              )}
+              {(isOrgAdmin || isSuperAdmin) && (
+                <button
+                  onClick={() => {
+                    if (confirm('Tem certeza que deseja excluir este paciente?')) {
+                      deleteMutation.mutate();
+                    }
+                  }}
+                  className="px-4 py-2 text-red-600 hover:text-red-800"
+                >
+                  Excluir
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {error && (

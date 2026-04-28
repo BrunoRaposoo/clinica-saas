@@ -27,12 +27,14 @@ apps/web/src/
 ├── components/              # Componentes React
 │   ├── auth/               # Componentes de autenticação
 │   ├── layout/             # Componentes de layout
+│   ├── role-guard.tsx     # Componente de controle de acesso
 │   └── ui/                 # Componentes base (@clinica-saas/ui)
 ├── lib/                    # Utilitários
 │   ├── api.ts              # Cliente HTTP
 │   ├── auth.ts             # Lógica de auth
 │   └── utils.ts            # Utilitários
 ├── hooks/                  # Custom hooks
+│   └── use-role.ts        # Hook de controle de acesso por role
 ├── providers/              # React Context providers
 │   └── session-provider.tsx
 └── types/                  # Types específicos do frontend
@@ -51,6 +53,7 @@ apps/web/src/
 - Tokens em memória (access) + httpOnly cookie (refresh)
 - Middleware para proteção de rotas
 - Redirect para `/login` se não autenticado
+- **Controle de acesso via useRole() hook** - Obrigatório em todas as páginas
 
 ### Componentes
 - UI base em `@clinica-saas/ui`

@@ -5,8 +5,10 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { patientsApi } from '@/lib/api/patients';
 import { Patient } from '@clinica-saas/contracts';
+import { useRole } from '@/hooks/use-role';
 
 export default function PatientsPage() {
+  const { canManagePatients } = useRole();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [document, setDocument] = useState('');
@@ -24,12 +26,14 @@ export default function PatientsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Pacientes</h1>
-        <Link
-          href="/patients/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          + Novo Paciente
-        </Link>
+        {canManagePatients && (
+          <Link
+            href="/patients/new"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            + Novo Paciente
+          </Link>
+        )}
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
