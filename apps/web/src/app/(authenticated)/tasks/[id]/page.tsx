@@ -56,9 +56,17 @@ export default function TaskDetailPage() {
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex justify-between items-start mb-4">
           <h1 className="text-2xl font-bold">{task.title}</h1>
-          <span className={`px-3 py-1 rounded ${priorityColor(task.priority)}`}>
-            {task.priority}
-          </span>
+          <div className="flex gap-2">
+            <Link
+              href={`/tasks/${taskId}/edit`}
+              className="px-3 py-1 border rounded hover:bg-gray-50"
+            >
+              Editar
+            </Link>
+            <span className={`px-3 py-1 rounded ${priorityColor(task.priority)}`}>
+              {task.priority}
+            </span>
+          </div>
         </div>
 
         {task.description && (

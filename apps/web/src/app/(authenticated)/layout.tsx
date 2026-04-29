@@ -11,6 +11,7 @@ const navItemsBase = [
   { href: '/patients', label: 'Pacientes', icon: '👥', allowedRoles: ['super_admin', 'org_admin', 'receptionist', 'professional', 'support'] },
   { href: '/schedule', label: 'Agenda', icon: '📅', allowedRoles: ['super_admin', 'org_admin', 'receptionist', 'professional', 'support'] },
   { href: '/appointments', label: 'Agendamentos', icon: '🗓️', allowedRoles: ['super_admin', 'org_admin', 'receptionist', 'professional', 'support'] },
+  { href: '/tasks', label: 'Tarefas', icon: '📋', allowedRoles: ['super_admin', 'org_admin', 'receptionist', 'professional', 'support'] },
 ];
 
 const bottomNavItems = [

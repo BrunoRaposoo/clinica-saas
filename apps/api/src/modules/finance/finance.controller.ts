@@ -67,7 +67,7 @@ export class FinanceController {
     @Body() dto: CreateChargeDto,
     @CurrentUser() user: any,
   ): Promise<Charge> {
-    return this.financeService.create(dto, user.organizationId!, user.id);
+    return this.financeService.create(dto, user.organizationId!, user.sub);
   }
 
   @Patch('charges/:id')
@@ -77,7 +77,7 @@ export class FinanceController {
     @Body() dto: UpdateChargeDto,
     @CurrentUser() user: any,
   ): Promise<Charge> {
-    return this.financeService.update(id, dto, user.organizationId!, user.id);
+    return this.financeService.update(id, dto, user.organizationId!, user.sub);
   }
 
   @Post('charges/:id/pay')
@@ -87,7 +87,7 @@ export class FinanceController {
     @Body() dto: ChargePaymentDto,
     @CurrentUser() user: any,
   ): Promise<Charge> {
-    return this.financeService.processPayment(id, dto, user.organizationId!, user.id);
+    return this.financeService.processPayment(id, dto, user.organizationId!, user.sub);
   }
 
   @Delete('charges/:id')
@@ -96,7 +96,7 @@ export class FinanceController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: any,
   ): Promise<void> {
-    return this.financeService.cancel(id, user.organizationId!, user.id);
+    return this.financeService.cancel(id, user.organizationId!, user.sub);
   }
 
   @Post('charges/update-overdue')

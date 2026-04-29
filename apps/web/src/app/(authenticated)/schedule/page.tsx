@@ -27,31 +27,39 @@ const statusColors: Record<AppointmentStatus, string> = {
 
 export default function SchedulePage() {
   const [view, setView] = useState<'day' | 'week' | 'month'>('week');
-  const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [currentDate, setCurrentDate] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  });
   const [professionalId, setProfessionalId] = useState<string>('');
   const [selectedDay, setSelectedDay] = useState<{ date: string; slots: any[] } | null>(null);
 
+  const formatDateForInput = (d: Date) => {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
   const getDateRange = () => {
-    const date = new Date(currentDate);
     let startDate: string;
     let endDate: string;
 
     if (view === 'day') {
-      startDate = date.toISOString().split('T')[0];
-      endDate = date.toISOString().split('T')[0];
+      startDate = currentDate;
+      endDate = currentDate;
     } else if (view === 'week') {
+      const date = new Date(currentDate + 'T00:00:00');
       const day = date.getDay();
       const start = new Date(date);
       start.setDate(date.getDate() - day);
-      startDate = start.toISOString().split('T')[0];
+      startDate = formatDateForInput(start);
       const end = new Date(start);
       end.setDate(start.getDate() + 6);
-      endDate = end.toISOString().split('T')[0];
+      endDate = formatDateForInput(end);
     } else {
+      const date = new Date(currentDate + 'T00:00:00');
       const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
       const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-      startDate = firstDay.toISOString().split('T')[0];
-      endDate = lastDay.toISOString().split('T')[0];
+      startDate = formatDateForInput(firstDay);
+      endDate = formatDateForInput(lastDay);
     }
 
     return { startDate, endDate };
@@ -70,7 +78,7 @@ export default function SchedulePage() {
   });
 
   const changePeriod = (delta: number) => {
-    const date = new Date(currentDate);
+    const date = new Date(currentDate + 'T00:00:00');
     if (view === 'day') {
       date.setDate(date.getDate() + delta);
     } else if (view === 'week') {
@@ -78,11 +86,11 @@ export default function SchedulePage() {
     } else {
       date.setMonth(date.getMonth() + delta);
     }
-    setCurrentDate(date.toISOString().split('T')[0]);
+    setCurrentDate(formatDateForInput(date));
   };
 
   const today = () => {
-    setCurrentDate(new Date().toISOString().split('T')[0]);
+    setCurrentDate(formatDateForInput(new Date()));
   };
 
   const formatDate = (dateStr: string) => {
