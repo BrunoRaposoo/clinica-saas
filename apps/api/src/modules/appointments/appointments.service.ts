@@ -301,13 +301,13 @@ export class AppointmentsService {
 
   async getCalendar(organizationId: string, query: CalendarQueryDto) {
     const { startDate, endDate, view, professionalId } = query;
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = new Date(startDate + 'T00:00:00');
+    const end = new Date(endDate + 'T23:59:59');
 
     const where: any = { organizationId, startDate: { gte: start }, endDate: { lte: end } };
     if (professionalId) where.professionalId = professionalId;
 
-const appointments = await this.prisma.appointment.findMany({
+    const appointments = await this.prisma.appointment.findMany({
       where,
       include: {
         patient: { select: { id: true, name: true, phone: true, email: true, document: true } },
@@ -322,16 +322,23 @@ const appointments = await this.prisma.appointment.findMany({
     });
 
     const days: any[] = [];
-    const current = new Date(start);
-    while (current <= end) {
+    const current = new Date(startDate + 'T00:00:00');
+    const endDateObj = new Date(endDate + 'T23:59:59');
+    
+    while (current <= endDateObj) {
       const dateStr = current.toISOString().split('T')[0];
-      const dayAppointments = appointments.filter((a) => a.startDate.toISOString().startsWith(dateStr));
-      const dayBlocks = blocks.filter((b) => b.startDate.toISOString().startsWith(dateStr));
+      const dayAppointments = appointments.filter((a) => {
+        const aDate = a.startDate.toISOString().split('T')[0];
+        return aDate === dateStr;
+      });
+      const dayBlocks = blocks.filter((b) => {
+        const bDate = b.startDate.toISOString().split('T')[0];
+        return bDate === dateStr;
+      });
 
       const slots: any[] = [];
       for (let hour = 8; hour < 18; hour++) {
         const timeStr = `${hour.toString().padStart(2, '0')}:00`;
-        const slotTime = new Date(`${dateStr}T${timeStr}:00`);
 
         const appointment = dayAppointments.find((a) => {
           const aStart = new Date(a.startDate);

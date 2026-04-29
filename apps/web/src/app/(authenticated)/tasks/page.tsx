@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasksApi } from '@/lib/api/tasks';
-import { TaskStatus, TaskPriority } from '@clinica-saas/contracts';
+import { TaskStatus, TaskPriority, Task, TaskListParams } from '@clinica-saas/contracts';
 import Link from 'next/link';
+import { TaskFilters } from '@/components/tasks';
 
 const COLUMNS: { status: TaskStatus; title: string; color: string }[] = [
   { status: 'pending', title: 'Pendente', color: 'border-yellow-500' },
@@ -12,13 +13,22 @@ const COLUMNS: { status: TaskStatus; title: string; color: string }[] = [
   { status: 'completed', title: 'Concluído', color: 'border-green-500' },
 ];
 
+const isOverdue = (task: Task): boolean => {
+  if (!task.dueDate || task.status === 'completed') return false;
+  const dueDate = new Date(task.dueDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return dueDate < today;
+};
+
 export default function TasksPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState<TaskListParams>({});
 
   const { data, isLoading } = useQuery({
-    queryKey: ['tasks', search],
-    queryFn: () => tasksApi.list({ search: search || undefined }),
+    queryKey: ['tasks', filters, search],
+    queryFn: () => tasksApi.list({ ...filters, search: search || undefined }),
   });
 
   const updateStatus = useMutation({
@@ -76,6 +86,8 @@ export default function TasksPage() {
         />
       </div>
 
+      <TaskFilters onFilterChange={setFilters} initialValues={filters} />
+
       <div className="grid grid-cols-3 gap-4">
         {COLUMNS.map((column) => (
           <div
@@ -93,8 +105,13 @@ export default function TasksPage() {
                   key={task.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, task.id)}
-                  className="bg-white p-3 rounded shadow cursor-move hover:shadow-md"
+                  className={`bg-white p-3 rounded shadow cursor-move hover:shadow-md ${
+                    isOverdue(task) ? 'border-2 border-red-500' : ''
+                  }`}
                 >
+                  {isOverdue(task) && (
+                    <span className="text-xs text-red-600 font-medium">⚠️ Atrasada</span>
+                  )}
                   <Link href={`/tasks/${task.id}`}>
                     <h3 className="font-medium">{task.title}</h3>
                   </Link>
@@ -108,7 +125,7 @@ export default function TasksPage() {
                       {task.priority}
                     </span>
                     {task.dueDate && (
-                      <span className="text-xs text-gray-500">
+                      <span className={`text-xs ${isOverdue(task) ? 'text-red-600' : 'text-gray-500'}`}>
                         {new Date(task.dueDate).toLocaleDateString('pt-BR')}
                       </span>
                     )}

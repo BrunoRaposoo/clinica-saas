@@ -57,7 +57,7 @@ export class TasksController {
     @Body() dto: CreateTaskDto,
     @CurrentUser() user: any,
   ): Promise<Task> {
-    return this.tasksService.create(dto, user.organizationId!, user.id);
+    return this.tasksService.create(dto, user.organizationId!, user.sub);
   }
 
   @Patch(':id')
@@ -67,7 +67,7 @@ export class TasksController {
     @Body() dto: UpdateTaskDto,
     @CurrentUser() user: any,
   ): Promise<Task> {
-    return this.tasksService.update(id, dto, user.organizationId!, user.id);
+    return this.tasksService.update(id, dto, user.organizationId!, user.sub);
   }
 
   @Patch(':id/status')
@@ -77,7 +77,7 @@ export class TasksController {
     @Body() dto: UpdateTaskStatusDto,
     @CurrentUser() user: any,
   ): Promise<Task> {
-    return this.tasksService.updateStatus(id, dto.status, user.organizationId!, user.id);
+    return this.tasksService.updateStatus(id, dto.status, user.organizationId!, user.sub);
   }
 
   @Delete(':id')
@@ -86,7 +86,7 @@ export class TasksController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: any,
   ): Promise<void> {
-    return this.tasksService.delete(id, user.organizationId!, user.id);
+    return this.tasksService.delete(id, user.organizationId!, user.sub);
   }
 
   @Post(':id/comments')
@@ -96,7 +96,7 @@ export class TasksController {
     @Body() dto: CreateTaskCommentDto,
     @CurrentUser() user: any,
   ): Promise<TaskComment> {
-    return this.tasksService.addComment(id, dto, user.organizationId!, user.id);
+    return this.tasksService.addComment(id, dto, user.organizationId!, user.sub);
   }
 
   @Get('patient/:patientId')

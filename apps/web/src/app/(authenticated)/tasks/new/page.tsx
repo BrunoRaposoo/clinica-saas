@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { tasksApi } from '@/lib/api/tasks';
 import { TaskPriority } from '@clinica-saas/contracts';
+import { PatientSelect, AppointmentSelect, UserSelect } from '@/components/tasks';
 
 export default function NewTaskPage() {
   const router = useRouter();
@@ -13,8 +14,9 @@ export default function NewTaskPage() {
     description: '',
     priority: 'medium' as TaskPriority,
     dueDate: '',
-    patientId: '',
-    appointmentId: '',
+    patientId: undefined as string | undefined,
+    appointmentId: undefined as string | undefined,
+    assignedTo: undefined as string | undefined,
   });
 
   const createTask = useMutation({
@@ -23,11 +25,15 @@ export default function NewTaskPage() {
       description: data.description || undefined,
       priority: data.priority,
       dueDate: data.dueDate || undefined,
-      patientId: data.patientId || undefined,
-      appointmentId: data.appointmentId || undefined,
+      patientId: data.patientId,
+      appointmentId: data.appointmentId,
+      assignedTo: data.assignedTo,
     }),
     onSuccess: () => {
       router.push('/tasks');
+    },
+    onError: (error: Error) => {
+      alert(error.message || 'Erro ao criar tarefa');
     },
   });
 
@@ -87,27 +93,20 @@ export default function NewTaskPage() {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Vincular Paciente (ID)</label>
-          <input
-            type="text"
-            value={formData.patientId}
-            onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}
-            className="w-full px-3 py-2 border rounded"
-            placeholder="uuid"
-          />
-        </div>
+        <PatientSelect
+          value={formData.patientId}
+          onChange={(patientId) => setFormData({ ...formData, patientId })}
+        />
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Vincular Agendamento (ID)</label>
-          <input
-            type="text"
-            value={formData.appointmentId}
-            onChange={(e) => setFormData({ ...formData, appointmentId: e.target.value })}
-            className="w-full px-3 py-2 border rounded"
-            placeholder="uuid"
-          />
-        </div>
+        <AppointmentSelect
+          value={formData.appointmentId}
+          onChange={(appointmentId) => setFormData({ ...formData, appointmentId })}
+        />
+
+        <UserSelect
+          value={formData.assignedTo}
+          onChange={(assignedTo) => setFormData({ ...formData, assignedTo })}
+        />
 
         <div className="flex gap-4">
           <button
