@@ -39,7 +39,12 @@ export class TasksController {
     @Query() query: ListTasksQueryDto,
     @CurrentUser() user: any,
   ): Promise<TaskListResponse> {
-    return this.tasksService.findAll(query, user.organizationId!);
+    console.log('[TasksController.findAll] user:', JSON.stringify({ 
+      sub: user.sub, 
+      roleName: user.roleName, 
+      organizationId: user.organizationId 
+    }));
+    return this.tasksService.findAll(query, user.organizationId!, user.sub, user.roleName);
   }
 
   @Get(':id')
@@ -48,7 +53,7 @@ export class TasksController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: any,
   ): Promise<Task> {
-    return this.tasksService.findById(id, user.organizationId!);
+    return this.tasksService.findById(id, user.organizationId!, user.sub, user.roleName);
   }
 
   @Post()
@@ -105,7 +110,7 @@ export class TasksController {
     @Param('patientId', ParseUUIDPipe) patientId: string,
     @CurrentUser() user: any,
   ): Promise<Task[]> {
-    return this.tasksService.findByPatient(patientId, user.organizationId!);
+    return this.tasksService.findByPatient(patientId, user.organizationId!, user.sub, user.roleName);
   }
 
   @Get('appointment/:appointmentId')
@@ -114,6 +119,6 @@ export class TasksController {
     @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
     @CurrentUser() user: any,
   ): Promise<Task[]> {
-    return this.tasksService.findByAppointment(appointmentId, user.organizationId!);
+    return this.tasksService.findByAppointment(appointmentId, user.organizationId!, user.sub, user.roleName);
   }
 }

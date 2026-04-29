@@ -56,9 +56,14 @@ export class TasksService {
   async findAll(
     params: TaskListParams,
     organizationId: string,
+    userId: string,
+    roleName: string,
   ): Promise<TaskListResponse> {
     const { page = 1, limit = 20, status, priority, assignedTo, patientId, appointmentId, dueDateFrom, dueDateTo, search } = params;
     const skip = (page - 1) * limit;
+
+    console.log('[TasksService.findAll] params:', JSON.stringify(params));
+    console.log('[TasksService.findAll] userId:', userId, 'roleName:', roleName);
 
     const where: any = { organizationId };
 
@@ -77,6 +82,31 @@ export class TasksService {
       where.dueDate = {};
       if (dueDateFrom) where.dueDate.gte = startOfDay(new Date(dueDateFrom));
       if (dueDateTo) where.dueDate.lte = endOfDay(new Date(dueDateTo));
+    }
+
+    console.log('[TasksService.findAll] where BEFORE professional filter:', JSON.stringify(where));
+
+    if (roleName === 'professional') {
+      const accessCondition = {
+        OR: [
+          { createdBy: userId },
+          { assignedTo: userId },
+        ],
+      };
+
+      console.log('[TasksService.findAll] accessCondition:', JSON.stringify(accessCondition));
+
+      const existingConditions: any = { ...where };
+      delete existingConditions.OR;
+      
+      console.log('[TasksService.findAll] existingConditions:', JSON.stringify(existingConditions));
+      
+      where.AND = [existingConditions, accessCondition];
+      delete where.OR;
+
+      console.log('[TasksService.findAll] where AFTER professional filter:', JSON.stringify(where));
+    } else {
+      console.log('[TasksService.findAll] roleName is NOT professional, no access filter applied');
     }
 
     const [items, total] = await Promise.all([
@@ -99,7 +129,7 @@ export class TasksService {
     };
   }
 
-  async findById(id: string, organizationId: string): Promise<Task> {
+  async findById(id: string, organizationId: string, userId: string, roleName: string): Promise<Task> {
     const task = await this.prisma.task.findFirst({
       where: { id, organizationId },
       include: {
@@ -113,6 +143,10 @@ export class TasksService {
     });
 
     if (!task) {
+      throw new NotFoundException('Tarefa não encontrada');
+    }
+
+    if (roleName === 'professional' && task.createdBy !== userId && task.assignedTo !== userId) {
       throw new NotFoundException('Tarefa não encontrada');
     }
 
@@ -266,9 +300,18 @@ export class TasksService {
     };
   }
 
-  async findByPatient(patientId: string, organizationId: string): Promise<Task[]> {
+  async findByPatient(patientId: string, organizationId: string, userId: string, roleName: string): Promise<Task[]> {
+    const where: any = { patientId, organizationId };
+
+    if (roleName === 'professional') {
+      where.OR = [
+        { createdBy: userId },
+        { assignedTo: userId },
+      ];
+    }
+
     const tasks = await this.prisma.task.findMany({
-      where: { patientId, organizationId },
+      where,
       orderBy: [{ createdAt: 'desc' }],
       include: {
         assignedToUser: { select: { id: true, name: true } },
@@ -278,9 +321,18 @@ export class TasksService {
     return tasks.map(this.mapTask.bind(this));
   }
 
-  async findByAppointment(appointmentId: string, organizationId: string): Promise<Task[]> {
+  async findByAppointment(appointmentId: string, organizationId: string, userId: string, roleName: string): Promise<Task[]> {
+    const where: any = { appointmentId, organizationId };
+
+    if (roleName === 'professional') {
+      where.OR = [
+        { createdBy: userId },
+        { assignedTo: userId },
+      ];
+    }
+
     const tasks = await this.prisma.task.findMany({
-      where: { appointmentId, organizationId },
+      where,
       orderBy: [{ createdAt: 'desc' }],
       include: {
         assignedToUser: { select: { id: true, name: true } },

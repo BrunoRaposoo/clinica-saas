@@ -358,6 +358,9 @@ interface Appointment {
 interface PatientBasic {
     id: string;
     name: string;
+    phone?: string | null;
+    email?: string | null;
+    document?: string | null;
 }
 interface ProfessionalBasic {
     id: string;
