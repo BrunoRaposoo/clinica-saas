@@ -6,6 +6,7 @@ import { tasksApi } from '@/lib/api/tasks';
 import { TaskStatus, TaskPriority, Task, TaskListParams } from '@clinica-saas/contracts';
 import Link from 'next/link';
 import { TaskFilters } from '@/components/tasks';
+import { useSession } from '@/providers/session-provider';
 
 const COLUMNS: { status: TaskStatus; title: string; color: string }[] = [
   { status: 'pending', title: 'Pendente', color: 'border-yellow-500' },
@@ -23,11 +24,12 @@ const isOverdue = (task: Task): boolean => {
 
 export default function TasksPage() {
   const queryClient = useQueryClient();
+  const { user } = useSession();
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<TaskListParams>({});
 
   const { data, isLoading } = useQuery({
-    queryKey: ['tasks', filters, search],
+    queryKey: ['tasks', user?.id, filters, search],
     queryFn: () => tasksApi.list({ ...filters, search: search || undefined }),
   });
 

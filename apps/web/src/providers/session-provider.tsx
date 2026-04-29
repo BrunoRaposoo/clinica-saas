@@ -3,6 +3,9 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { AuthUserResponse } from '@clinica-saas/contracts';
 import { setTokens, clearTokens, getAccessToken, getRefreshToken, hasTokens, clearTokens as clientClearTokens } from '@/lib/api/client';
+import { QueryClient } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 interface SessionContextType {
   user: AuthUserResponse | null;
@@ -76,6 +79,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('user');
     
     clientClearTokens();
+    queryClient.clear();
     setUser(null);
   };
 
