@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Task, TaskStatus, TaskPriority, TaskUpdateRequest } from '@clinica-saas/contracts';
 import { tasksApi } from '@/lib/api/tasks';
 import { TaskChecklist } from './TaskChecklist';
@@ -41,17 +41,31 @@ const statusColors: Record<TaskStatus, string> = {
 export function TaskModal({ task, onClose }: TaskModalProps) {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
-  
-  // Edit states
+
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(task.title);
   const [editingDesc, setEditingDesc] = useState(false);
   const [descValue, setDescValue] = useState(task.description || '');
   const [saving, setSaving] = useState(false);
 
+  const { data: freshTask } = useQuery({
+    queryKey: ['task', task.id],
+    queryFn: () => tasksApi.getById(task.id),
+    initialData: task,
+    refetchInterval: 3000,
+  });
+
+  const currentTask = freshTask || task;
+
+  useEffect(() => {
+    setTitleValue(currentTask.title);
+    setDescValue(currentTask.description || '');
+  }, [currentTask.title, currentTask.description]);
+
   const updateTaskMutation = useMutation({
     mutationFn: (data: TaskUpdateRequest) => tasksApi.update(task.id, data),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', task.id] });
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       setSaving(false);
     },
@@ -61,7 +75,7 @@ export function TaskModal({ task, onClose }: TaskModalProps) {
   });
 
   const handleSaveTitle = () => {
-    if (titleValue.trim() && titleValue !== task.title) {
+    if (titleValue.trim() && titleValue !== currentTask.title) {
       setSaving(true);
       updateTaskMutation.mutate({ title: titleValue.trim() });
     }
@@ -69,7 +83,7 @@ export function TaskModal({ task, onClose }: TaskModalProps) {
   };
 
   const handleSaveDesc = () => {
-    if (descValue !== task.description) {
+    if (descValue !== currentTask.description) {
       setSaving(true);
       updateTaskMutation.mutate({ description: descValue || undefined });
     }
@@ -150,7 +164,7 @@ export function TaskModal({ task, onClose }: TaskModalProps) {
                     className="text-xl font-bold text-gray-800 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded"
                     onClick={() => setEditingTitle(true)}
                   >
-                    {task.title}
+                    {currentTask.title}
                   </h2>
                 )}
               </div>
@@ -160,9 +174,9 @@ export function TaskModal({ task, onClose }: TaskModalProps) {
                 <div>
                   <label className="text-xs text-gray-500 block mb-1">Status</label>
                   <select
-                    value={task.status}
+                    value={currentTask.status}
                     onChange={(e) => handleFieldChange('status', e.target.value)}
-                    className={`px-3 py-1.5 rounded text-sm font-medium border ${statusColors[task.status as TaskStatus]} cursor-pointer`}
+                    className={`px-3 py-1.5 rounded text-sm font-medium border ${statusColors[currentTask.status as TaskStatus]} cursor-pointer`}
                   >
                     <option value="pending">Pendente</option>
                     <option value="in_progress">Em Andamento</option>
@@ -172,9 +186,9 @@ export function TaskModal({ task, onClose }: TaskModalProps) {
                 <div>
                   <label className="text-xs text-gray-500 block mb-1">Prioridade</label>
                   <select
-                    value={task.priority}
+                    value={currentTask.priority}
                     onChange={(e) => handleFieldChange('priority', e.target.value)}
-                    className={`px-3 py-1.5 rounded text-sm font-medium border cursor-pointer ${priorityColors[task.priority as TaskPriority]}`}
+                    className={`px-3 py-1.5 rounded text-sm font-medium border cursor-pointer ${priorityColors[currentTask.priority as TaskPriority]}`}
                   >
                     <option value="low">Baixa</option>
                     <option value="medium">Média</option>
@@ -188,7 +202,7 @@ export function TaskModal({ task, onClose }: TaskModalProps) {
                 <label className="text-xs text-gray-500 block mb-1">Responsável</label>
                 <div className="w-full max-w-xs">
                   <UserSelect
-                    value={task.assignedTo?.id}
+                    value={currentTask.assignedTo?.id}
                     onChange={(userId) => handleFieldChange('assignedTo', userId || null)}
                     placeholder="Selecione responsável"
                   />
@@ -200,7 +214,7 @@ export function TaskModal({ task, onClose }: TaskModalProps) {
                 <label className="text-xs text-gray-500 block mb-1">Vencimento</label>
                 <input
                   type="date"
-                  value={formatDate(task.dueDate)}
+                  value={formatDate(currentTask.dueDate)}
                   onChange={(e) => handleFieldChange('dueDate', e.target.value || null)}
                   className="px-3 py-2 border rounded text-sm"
                 />
@@ -222,8 +236,8 @@ export function TaskModal({ task, onClose }: TaskModalProps) {
                     className="w-full px-3 py-2 min-h-[80px] border rounded bg-gray-50 cursor-pointer hover:bg-gray-100"
                     onClick={() => setEditingDesc(true)}
                   >
-                    {task.description ? (
-                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{task.description}</p>
+                    {currentTask.description ? (
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{currentTask.description}</p>
                     ) : (
                       <p className="text-sm text-gray-400 italic">Clique para adicionar descrição...</p>
                     )}
@@ -235,20 +249,20 @@ export function TaskModal({ task, onClose }: TaskModalProps) {
             {/* COLUNA DIREITA - Checklist e Comentários */}
             <div className="space-y-4">
               {/* Checklist */}
-              <TaskChecklist taskId={task.id} items={task.checklistItems || []} />
+              <TaskChecklist taskId={currentTask.id} items={currentTask.checklistItems || []} />
 
               {/* Comentários */}
-              <TaskComments taskId={task.id} comments={task.comments || []} />
+              <TaskComments taskId={currentTask.id} comments={currentTask.comments || []} />
             </div>
           </div>
         </div>
 
         <div className="border-t px-6 py-4 flex justify-between items-center">
           <div className="text-xs text-gray-400">
-            Criado por {task.createdBy.name} • {new Date(task.createdAt).toLocaleDateString('pt-BR')}
+            Criado por {currentTask.createdBy.name} • {new Date(currentTask.createdAt).toLocaleDateString('pt-BR')}
           </div>
           <Link
-            href={`/tasks/${task.id}/edit`}
+            href={`/tasks/${currentTask.id}/edit`}
             className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded text-sm font-medium"
           >
             Ver detalhes completos
