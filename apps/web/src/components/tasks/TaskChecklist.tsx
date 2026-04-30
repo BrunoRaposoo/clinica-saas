@@ -20,6 +20,7 @@ export function TaskChecklist({ taskId, items, readOnly = false }: TaskChecklist
     mutationFn: (itemId: string) => tasksApi.toggleChecklistItem(taskId, itemId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
     },
   });
 
@@ -27,6 +28,7 @@ export function TaskChecklist({ taskId, items, readOnly = false }: TaskChecklist
     mutationFn: (data: { content: string; isCompleted?: boolean }) => tasksApi.createChecklistItem(taskId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
       setNewItem('');
       setIsAdding(false);
     },
@@ -36,6 +38,7 @@ export function TaskChecklist({ taskId, items, readOnly = false }: TaskChecklist
     mutationFn: (itemId: string) => tasksApi.deleteChecklistItem(taskId, itemId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
     },
   });
 
