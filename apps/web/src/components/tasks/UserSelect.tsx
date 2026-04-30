@@ -30,19 +30,23 @@ export function UserSelect({ value, onChange, placeholder = 'Selecionar respons√
   };
 
   return (
-    <div className="relative">
-      <label className="block text-sm font-medium mb-1">Respons√°vel</label>
+    <div className="relative w-full">
       <div className="relative">
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full text-left px-3 py-2 border rounded bg-white hover:bg-gray-50"
+          className="w-full text-left px-3 py-2 border rounded bg-white hover:bg-gray-50 flex items-center justify-between"
         >
-          {selectedUser ? (
-            <span>{selectedUser.name} <span className="text-gray-500">({selectedUser.roleName})</span></span>
-          ) : (
-            <span className="text-gray-500">{placeholder}</span>
-          )}
+          <span className={selectedUser ? 'text-gray-900' : 'text-gray-500'}>
+            {selectedUser ? (
+              <>{selectedUser.name} <span className="text-gray-500 text-sm">({selectedUser.roleName})</span></>
+            ) : (
+              <>{placeholder}</>
+            )}
+          </span>
+          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
         </button>
         {value && (
           <button
@@ -51,7 +55,7 @@ export function UserSelect({ value, onChange, placeholder = 'Selecionar respons√
               e.stopPropagation();
               onChange(undefined);
             }}
-            className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-600"
+            className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-600 p-1"
           >
             ‚úï
           </button>

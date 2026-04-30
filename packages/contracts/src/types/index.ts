@@ -59,6 +59,9 @@ export type {
   TaskStatus,
   TaskPriority,
   TaskAction,
+  TaskChecklistItem,
+  TaskChecklistItemCreateRequest,
+  TaskChecklistItemUpdateRequest,
 } from './task';
 
 export type {

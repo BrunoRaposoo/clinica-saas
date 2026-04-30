@@ -1,7 +1,21 @@
-import { IsString, IsOptional, IsEnum, IsUUID, IsDateString, MaxLength, MinLength } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsUUID, IsDateString, MaxLength, MinLength, IsBoolean, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { Expose } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { TaskStatus, TaskPriority } from '@clinica-saas/contracts';
+
+class ChecklistItemDto {
+  @ApiProperty({ minLength: 1, maxLength: 200 })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  content!: string;
+
+  @ApiPropertyOptional({ example: false })
+  @IsOptional()
+  @IsBoolean()
+  isCompleted?: boolean;
+}
 
 export class CreateTaskDto {
   @ApiProperty({ minLength: 3, maxLength: 200 })
@@ -47,6 +61,14 @@ export class CreateTaskDto {
   @IsDateString()
   @Expose()
   dueDate?: string;
+
+  @ApiPropertyOptional({ type: [ChecklistItemDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ChecklistItemDto)
+  @Expose()
+  checklistItems?: ChecklistItemDto[];
 }
 
 export class UpdateTaskDto {
@@ -88,6 +110,14 @@ export class UpdateTaskDto {
   @IsEnum(['pending', 'in_progress', 'completed'])
   @Expose()
   status?: TaskStatus;
+
+  @ApiPropertyOptional({ type: [ChecklistItemDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ChecklistItemDto)
+  @Expose()
+  checklistItems?: ChecklistItemDto[];
 }
 
 export class UpdateTaskStatusDto {
@@ -152,4 +182,44 @@ export class ListTasksQueryDto {
   @IsOptional()
   @IsString()
   search?: string;
+}
+
+export class CreateTaskChecklistItemDto {
+  @ApiProperty({ example: 'Realizar anamnese', minLength: 1, maxLength: 200 })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  @Expose()
+  content!: string;
+
+  @ApiPropertyOptional({ example: false })
+  @IsOptional()
+  @IsBoolean()
+  @Expose()
+  isCompleted?: boolean;
+}
+
+export class UpdateTaskChecklistItemDto {
+  @ApiPropertyOptional({ example: 'Realizar anamnese', minLength: 1, maxLength: 200 })
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  @Expose()
+  content?: string;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  @Expose()
+  isCompleted?: boolean;
+}
+
+export class UpdateTaskCommentDto {
+  @ApiProperty({ example: 'Novo conteúdo do comentário', minLength: 1, maxLength: 1000 })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(1000)
+  @Expose()
+  content!: string;
 }

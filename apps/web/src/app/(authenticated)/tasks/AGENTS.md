@@ -2,19 +2,19 @@
 
 ## Escopo
 
-Melhorias no módulo de tarefas do frontend Next.js:
-- Navegação no menu sidebar
-- Componentes de selector (paciente, agendamento, usuário)
-- Página de edição
-- Filtros no Kanban
+Módulo de tarefas do frontend Next.js com:
+- Kanban com 3 colunas (Pendente, Em Andamento, Concluído)
+- Modal de detalhes com edição inline (estilo Jira)
+- Checklist para acompanhamento de subtarefas
+- Comentários para colaboração da equipe
 
 ## Objetivo
 
-Melhorar UX/UI do módulo de tarefas:
-- Adicionar "Tarefas" ao menu
-- Substituir inputs de texto por dropdowns com busca
-- Adicionar página de edição
-- Adicionar filtros no Kanban
+Fornecer interface completa de gerenciamento de tarefas:
+- Kanban visual para acompanhamento de fluxo
+- **Modal de edição inline** - editar qualquer campo diretamente sem navegar para outra página
+- Checklist opcional para quebrar tarefas em steps
+- Sistema de comentários para discussão
 
 ## Estrutura de Pastas
 
@@ -22,86 +22,115 @@ Melhorar UX/UI do módulo de tarefas:
 apps/web/src/app/(authenticated)/tasks/
 ├── page.tsx                    # Kanban
 ├── new/
-│   └── page.tsx               # Criar tarefa
-├── [id]/
-│   ├── page.tsx               # Detalhes
-│   └── edit/
-│       └── page.tsx           # Editar tarefa (NOVO)
+│   └── page.tsx               # Criar tarefa (com checklist opcional)
+└── [id]/
+    └── page.tsx               # Detalhes (redireciona para modal)
 
-apps/web/src/components/tasks/  # (NOVO)
+apps/web/src/components/tasks/
 ├── PatientSelect.tsx          # Selector de paciente
 ├── AppointmentSelect.tsx      # Selector de agendamento
 ├── UserSelect.tsx             # Selector de usuário
 ├── TaskFilters.tsx            # Filtros do Kanban
+├── TaskModal.tsx              # Modal de detalhes com edição inline
+├── TaskChecklist.tsx          # Componente de checklist
+├── TaskComments.tsx           # Componente de comentários
 └── index.ts                   # Barrel export
 ```
 
-## Responsabilidades
+## Design do Modal (Edição Inline Estilo Jira)
 
-### O que fazer
-- Adicionar item ao menu em layout.tsx
-- Criar componentes de selector com busca
-- Criar página de edição
-- Adicionar filtros ao Kanban
+O TaskModal deve permitir edição direta de todos os campos:
 
-### O que não fazer
-- Modificar estrutura de dados
-- Adicionar funcionalidades fora do escopo (sub-tarefas, etc)
+### Campos Editáveis
+- **Título**: clique para editar, Enter ou blur para salvar
+- **Descrição**: clique para editar, blur para salvar
+- **Status**: dropdown (Pendente → Em Andamento → Concluído)
+- **Prioridade**: dropdown (Baixa → Média → Alta)
+- **Responsável**: dropdown com usuários da organização
+- **Data de Vencimento**: date picker
 
-## Arquivos de Referência
+### Layout Recomendado (Duas Colunas)
+```
+┌─────────────────────────────────────────┬────────────────────┐
+│ COLUNA ESQUERDA                         │ COLUNA DIREITA     │
+│                                         │                    │
+│ [Título editável]                       │ CHECKLIST          │
+│ Status: [dropdown]                       │ ☑ Item 1    [🗑]   │
+│ Prioridade: [dropdown]                   │ ☐ Item 2    [🗑]   │
+│ Responsável: [dropdown]                 │ + Adicionar        │
+│ Vencimento: [date picker]                │                    │
+│                                         │ COMENTÁRIOS        │
+│ Descrição: [textarea editável]          │ [Lista]            │
+│                                         │ [Input + Enviar]   │
+└─────────────────────────────────────────┴────────────────────┘
+```
 
-- SPEC: docs/superpowers/specs/2026-04-29-tasks-improvements-design.md
-- SPEC Original: docs/specs/006-tasks.md
-- API: apps/web/src/lib/api/tasks.ts
-- Contracts: packages/contracts/src/types/task.ts
-- Layout Menu: apps/web/src/app/(authenticated)/layout.tsx
+### Comportamento
+1. Usuário clica em qualquer campo → transforma em modo edição
+2. Ao alterar valor → faz PATCH automático para API
+3. Mostra feedback visual "Salvando..." durante request
+4. Feedback de sucesso após salvar
 
 ## APIs Existentes
 
 ```typescript
-// patients.ts
-patientsApi.getPatients(params) → PatientListResponse
-
-// appointments.ts
-appointmentsApi.getAppointments(params) → AppointmentListResponse
-
-// users.ts
-usersApi.listUsers(params) → { items: User[], pagination }
-
 // tasks.ts
 tasksApi.list(params) → TaskListResponse
-tasksApi.getById(id) → Task
+tasksApi.getById(id) → Task (inclui checklistItems e comments)
 tasksApi.create(data) → Task
 tasksApi.update(id, data) → Task
 tasksApi.updateStatus(id, data) → Task
+tasksApi.delete(id) → void
+tasksApi.addComment(id, data) → TaskComment
+tasksApi.updateComment(taskId, commentId, data) → TaskComment
+tasksApi.deleteComment(taskId, commentId) → void
+tasksApi.createChecklistItem(taskId, data) → TaskChecklistItem
+tasksApi.updateChecklistItem(taskId, itemId, data) → TaskChecklistItem
+tasksApi.toggleChecklistItem(taskId, itemId) → TaskChecklistItem
+tasksApi.deleteChecklistItem(taskId, itemId) → void
 ```
 
-## Componentes a Criar
+## Componentes
 
-### PatientSelect
-- Props: value, onChange, placeholder
-- Comportamento: search com debounce, dropdown com nome+documento
+### TaskModal (OBRIGATÓRIO - Edição Inline)
+- Props: task: Task, onClose: () => void
+- Comportamento: Todos os campos editáveis inline
+- Usar mutations do TanStack Query para save automático
 
-### AppointmentSelect
-- Props: value, onChange, patientId?, placeholder
-- Comportamento: search com debounce, mostra data/hora+paciente+profissional
+### TaskChecklist
+- Props: taskId: string, items: TaskChecklistItem[], readOnly?: boolean
+- Comportamento: toggle, adicionar, excluir itens
+- Sempre visível (mesmo vazio) com botão "+ Add"
 
-### UserSelect
-- Props: value, onChange, placeholder
-- Comportamento: lista usuários da org, mostra nome+role
+### TaskComments
+- Props: taskId: string, comments: TaskComment[]
+- Comportamento: listar, criar, editar (próprio), excluir (próprio)
+
+### PatientSelect, AppointmentSelect, UserSelect
+- Props: value, onChange, placeholder?
+- Comportamento: search com debounce, dropdown com resultados
 
 ### TaskFilters
 - Props: onFilterChange, initialValues
-- Filtros: status, priority, assignedTo, dueDateFrom, dueDateTo, search
+- Filtros: status, priority, assignedTo, dueDateFrom, dueDateTo
 
 ## Critérios de Desenvolvimento
 
-1. Usar UI components de @clinica-saas/ui
-2. Usar TanStack Query para fetching
-3. Seguir padrões existentes (hooks, components)
-4. Testar em mobile (responsividade)
-5. Tratar erros com mensagens claras
+1. **Edição inline** - todos os campos editáveis diretamente no modal (NÃO navegar para outra página)
+2. Usar UI components de @clinica-saas/ui
+3. Usar TanStack Query para fetching e mutations
+4. Feedback visual durante save (loading state)
+5. Layout responsivo
+6. Tratar erros com mensagens claras
+7. Seguir padrões existentes (hooks, components)
+
+## SPECs de Referência
+
+- SPEC Principal: docs/superpowers/specs/2026-04-29-task-modal-checklist-comments-design.md
+- SPEC Original: docs/specs/006-tasks.md
+- API: apps/web/src/lib/api/tasks.ts
+- Contracts: packages/contracts/src/types/task.ts
 
 ---
 
-**Contato**: docs/superpowers/specs/2026-04-29-tasks-improvements-design.md
+**Contato**: docs/superpowers/specs/2026-04-29-task-modal-checklist-comments-design.md

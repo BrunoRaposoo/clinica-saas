@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasksApi } from '@/lib/api/tasks';
 import { TaskStatus, TaskPriority, Task, TaskListParams } from '@clinica-saas/contracts';
 import Link from 'next/link';
-import { TaskFilters } from '@/components/tasks';
+import { TaskFilters, TaskModal } from '@/components/tasks';
 import { useSession } from '@/providers/session-provider';
 
 const COLUMNS: { status: TaskStatus; title: string; color: string }[] = [
@@ -27,6 +27,7 @@ export default function TasksPage() {
   const { user } = useSession();
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<TaskListParams>({});
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['tasks', user?.id, filters, search],
@@ -107,16 +108,15 @@ export default function TasksPage() {
                   key={task.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, task.id)}
-                  className={`bg-white p-3 rounded shadow cursor-move hover:shadow-md ${
+                  onClick={() => setSelectedTask(task)}
+                  className={`bg-white p-3 rounded shadow cursor-pointer hover:shadow-md ${
                     isOverdue(task) ? 'border-2 border-red-500' : ''
                   }`}
                 >
                   {isOverdue(task) && (
                     <span className="text-xs text-red-600 font-medium">⚠️ Atrasada</span>
                   )}
-                  <Link href={`/tasks/${task.id}`}>
-                    <h3 className="font-medium">{task.title}</h3>
-                  </Link>
+                  <h3 className="font-medium">{task.title}</h3>
                   {task.description && (
                     <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                       {task.description}
@@ -143,6 +143,10 @@ export default function TasksPage() {
           </div>
         ))}
       </div>
+
+      {selectedTask && (
+        <TaskModal task={selectedTask} onClose={() => setSelectedTask(null)} />
+      )}
     </div>
   );
 }

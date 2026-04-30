@@ -7,6 +7,7 @@ import {
   TaskStatusUpdateRequest,
   TaskCommentCreateRequest,
   TaskComment,
+  TaskChecklistItem,
 } from '@clinica-saas/contracts';
 
 import { getAuthHeaders, authenticatedFetch } from './client';
@@ -101,5 +102,60 @@ export const tasksApi = {
     });
     if (!response.ok) throw new Error('Failed to fetch appointment tasks');
     return response.json();
+  },
+
+  createChecklistItem: async (taskId: string, data: { content: string; isCompleted?: boolean }): Promise<TaskChecklistItem> => {
+    const response = await authenticatedFetch(`${BASE_URL}/${taskId}/checklist`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to create checklist item');
+    return response.json();
+  },
+
+  updateChecklistItem: async (taskId: string, itemId: string, data: { content?: string; isCompleted?: boolean }): Promise<TaskChecklistItem> => {
+    const response = await authenticatedFetch(`${BASE_URL}/${taskId}/checklist/${itemId}`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to update checklist item');
+    return response.json();
+  },
+
+  toggleChecklistItem: async (taskId: string, itemId: string): Promise<TaskChecklistItem> => {
+    const response = await authenticatedFetch(`${BASE_URL}/${taskId}/checklist/${itemId}/toggle`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to toggle checklist item');
+    return response.json();
+  },
+
+  deleteChecklistItem: async (taskId: string, itemId: string): Promise<void> => {
+    const response = await authenticatedFetch(`${BASE_URL}/${taskId}/checklist/${itemId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to delete checklist item');
+  },
+
+  updateComment: async (taskId: string, commentId: string, data: { content: string }): Promise<TaskComment> => {
+    const response = await authenticatedFetch(`${BASE_URL}/${taskId}/comments/${commentId}`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to update comment');
+    return response.json();
+  },
+
+  deleteComment: async (taskId: string, commentId: string): Promise<void> => {
+    const response = await authenticatedFetch(`${BASE_URL}/${taskId}/comments/${commentId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to delete comment');
   },
 };

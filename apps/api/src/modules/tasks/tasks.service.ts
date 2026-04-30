@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { Task, TaskStatus, TaskPriority, TaskListParams, TaskListResponse } from '@clinica-saas/contracts';
-import { CreateTaskDto, UpdateTaskDto, UpdateTaskStatusDto, CreateTaskCommentDto } from './dto/task.dto';
+import { Task, TaskStatus, TaskPriority, TaskListParams, TaskListResponse, TaskChecklistItem, TaskComment } from '@clinica-saas/contracts';
+import { CreateTaskDto, UpdateTaskDto, UpdateTaskStatusDto, CreateTaskCommentDto, CreateTaskChecklistItemDto, UpdateTaskChecklistItemDto, UpdateTaskCommentDto } from './dto/task.dto';
 
 function startOfDay(date: Date): Date {
   const d = new Date(date);
@@ -35,10 +35,21 @@ export class TasksService {
         assignedTo: dto.assignedTo,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
         createdBy: userId,
+        ...(dto.checklistItems && dto.checklistItems.length > 0 && {
+          checklistItems: {
+            create: dto.checklistItems.map((item, index) => ({
+              content: item.content,
+              isCompleted: item.isCompleted ?? false,
+              order: index,
+            })),
+          },
+        }),
       },
       include: {
         assignedToUser: { select: { id: true, name: true } },
         createdByUser: { select: { id: true, name: true } },
+        checklistItems: { orderBy: { order: 'asc' } },
+        comments: { include: { user: { select: { id: true, name: true } } }, orderBy: { createdAt: 'asc' } },
       },
     });
 
@@ -118,6 +129,11 @@ export class TasksService {
         include: {
           assignedToUser: { select: { id: true, name: true } },
           createdByUser: { select: { id: true, name: true } },
+          checklistItems: { orderBy: { order: 'asc' } },
+          comments: {
+            include: { user: { select: { id: true, name: true } } },
+            orderBy: { createdAt: 'asc' },
+          },
         },
       }),
       this.prisma.task.count({ where }),
@@ -135,6 +151,7 @@ export class TasksService {
       include: {
         assignedToUser: { select: { id: true, name: true } },
         createdByUser: { select: { id: true, name: true } },
+        checklistItems: { orderBy: { order: 'asc' } },
         comments: {
           include: { user: { select: { id: true, name: true } } },
           orderBy: { createdAt: 'asc' },
@@ -184,12 +201,28 @@ export class TasksService {
       }
     }
 
+    if (dto.checklistItems !== undefined) {
+      await this.prisma.taskChecklistItem.deleteMany({ where: { taskId: id } });
+      if (dto.checklistItems.length > 0) {
+        await this.prisma.taskChecklistItem.createMany({
+          data: dto.checklistItems.map((item, index) => ({
+            taskId: id,
+            content: item.content,
+            isCompleted: item.isCompleted ?? false,
+            order: index,
+          })),
+        });
+      }
+    }
+
     const task = await this.prisma.task.update({
       where: { id },
       data,
       include: {
         assignedToUser: { select: { id: true, name: true } },
         createdByUser: { select: { id: true, name: true } },
+        checklistItems: { orderBy: { order: 'asc' } },
+        comments: { include: { user: { select: { id: true, name: true } } }, orderBy: { createdAt: 'asc' } },
       },
     });
 
@@ -201,7 +234,7 @@ export class TasksService {
       },
     });
 
-    return this.mapTask(task);
+    return this.mapTaskWithComments(task);
   }
 
   async updateStatus(
@@ -342,6 +375,129 @@ export class TasksService {
     return tasks.map(this.mapTask.bind(this));
   }
 
+  async createChecklistItem(taskId: string, dto: CreateTaskChecklistItemDto, organizationId: string, userId: string): Promise<TaskChecklistItem> {
+    const task = await this.prisma.task.findFirst({
+      where: { id: taskId, organizationId },
+    });
+    if (!task) throw new NotFoundException('Tarefa não encontrada');
+
+    const lastItem = await this.prisma.taskChecklistItem.findFirst({
+      where: { taskId },
+      orderBy: { order: 'desc' },
+    });
+
+    const item = await this.prisma.taskChecklistItem.create({
+      data: {
+        taskId,
+        content: dto.content,
+        isCompleted: dto.isCompleted ?? false,
+        order: (lastItem?.order ?? -1) + 1,
+      },
+    });
+
+    return this.mapChecklistItem(item);
+  }
+
+  async updateChecklistItem(taskId: string, itemId: string, dto: UpdateTaskChecklistItemDto, organizationId: string): Promise<TaskChecklistItem> {
+    const task = await this.prisma.task.findFirst({
+      where: { id: taskId, organizationId },
+    });
+    if (!task) throw new NotFoundException('Tarefa não encontrada');
+
+    const item = await this.prisma.taskChecklistItem.update({
+      where: { id: itemId },
+      data: {
+        ...(dto.content !== undefined && { content: dto.content }),
+        ...(dto.isCompleted !== undefined && { isCompleted: dto.isCompleted }),
+      },
+    });
+
+    return this.mapChecklistItem(item);
+  }
+
+  async toggleChecklistItem(taskId: string, itemId: string, organizationId: string): Promise<TaskChecklistItem> {
+    const task = await this.prisma.task.findFirst({
+      where: { id: taskId, organizationId },
+    });
+    if (!task) throw new NotFoundException('Tarefa não encontrada');
+
+    const item = await this.prisma.taskChecklistItem.findUnique({
+      where: { id: itemId },
+    });
+    if (!item || item.taskId !== taskId) throw new NotFoundException('Item não encontrado');
+
+    const updated = await this.prisma.taskChecklistItem.update({
+      where: { id: itemId },
+      data: { isCompleted: !item.isCompleted },
+    });
+
+    return this.mapChecklistItem(updated);
+  }
+
+  async deleteChecklistItem(taskId: string, itemId: string, organizationId: string): Promise<void> {
+    const task = await this.prisma.task.findFirst({
+      where: { id: taskId, organizationId },
+    });
+    if (!task) throw new NotFoundException('Tarefa não encontrada');
+
+    await this.prisma.taskChecklistItem.delete({ where: { id: itemId } });
+  }
+
+  async updateComment(taskId: string, commentId: string, dto: UpdateTaskCommentDto, organizationId: string, userId: string): Promise<TaskComment> {
+    const task = await this.prisma.task.findFirst({
+      where: { id: taskId, organizationId },
+    });
+    if (!task) throw new NotFoundException('Tarefa não encontrada');
+
+    const comment = await this.prisma.taskComment.findUnique({
+      where: { id: commentId },
+    });
+    if (!comment || comment.taskId !== taskId) throw new NotFoundException('Comentário não encontrado');
+    if (comment.userId !== userId) throw new ForbiddenException('Você só pode editar seus próprios comentários');
+
+    const updated = await this.prisma.taskComment.update({
+      where: { id: commentId },
+      data: { content: dto.content },
+      include: { user: { select: { id: true, name: true } } },
+    });
+
+    return {
+      id: updated.id,
+      taskId: updated.taskId,
+      userId: updated.userId,
+      user: { id: updated.user.id, name: updated.user.name },
+      content: updated.content,
+      createdAt: updated.createdAt.toISOString(),
+    };
+  }
+
+  async deleteComment(taskId: string, commentId: string, organizationId: string, userId: string): Promise<void> {
+    const task = await this.prisma.task.findFirst({
+      where: { id: taskId, organizationId },
+    });
+    if (!task) throw new NotFoundException('Tarefa não encontrada');
+
+    const comment = await this.prisma.taskComment.findUnique({
+      where: { id: commentId },
+    });
+    if (!comment || comment.taskId !== taskId) throw new NotFoundException('Comentário não encontrado');
+    if (comment.userId !== userId) throw new ForbiddenException('Você só pode excluir seus próprios comentários');
+
+    await this.prisma.taskComment.delete({ where: { id: commentId } });
+  }
+
+  private mapChecklistItem(item: any): TaskChecklistItem {
+    return {
+      id: item.id,
+      taskId: item.taskId,
+      content: item.content,
+      isCompleted: item.isCompleted,
+      order: item.order,
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
+    };
+  }
+
   private mapTask(task: any): Task {
     return {
       id: task.id,
@@ -358,12 +514,38 @@ export class TasksService {
       createdBy: { id: task.createdByUser.id, name: task.createdByUser.name },
       createdAt: task.createdAt.toISOString(),
       updatedAt: task.updatedAt.toISOString(),
+      checklistItems: task.checklistItems?.map((item: any) => ({
+        id: item.id,
+        taskId: item.taskId,
+        content: item.content,
+        isCompleted: item.isCompleted,
+        order: item.order,
+        createdAt: item.createdAt.toISOString(),
+        updatedAt: item.updatedAt.toISOString(),
+      })),
+      comments: task.comments?.map((c: any) => ({
+        id: c.id,
+        taskId: c.taskId,
+        userId: c.userId,
+        user: { id: c.user.id, name: c.user.name },
+        content: c.content,
+        createdAt: c.createdAt.toISOString(),
+      })),
     };
   }
 
-  private mapTaskWithComments(task: any): Task & { comments?: any[] } {
+  private mapTaskWithComments(task: any): Task & { comments?: any[]; checklistItems?: any[] } {
     return {
       ...this.mapTask(task),
+      checklistItems: task.checklistItems?.map((item: any) => ({
+        id: item.id,
+        taskId: item.taskId,
+        content: item.content,
+        isCompleted: item.isCompleted,
+        order: item.order,
+        createdAt: item.createdAt.toISOString(),
+        updatedAt: item.updatedAt.toISOString(),
+      })),
       comments: task.comments?.map((c: any) => ({
         id: c.id,
         taskId: c.taskId,

@@ -17,6 +17,8 @@ export interface Task {
   createdBy: { id: string; name: string };
   createdAt: string;
   updatedAt: string;
+  checklistItems?: TaskChecklistItem[];
+  comments?: TaskComment[];
 }
 
 export interface TaskListParams {
@@ -50,6 +52,7 @@ export interface TaskCreateRequest {
   priority?: TaskPriority;
   assignedTo?: string;
   dueDate?: string;
+  checklistItems?: TaskChecklistItemCreateRequest[];
 }
 
 export interface TaskUpdateRequest {
@@ -59,6 +62,7 @@ export interface TaskUpdateRequest {
   assignedTo?: string;
   dueDate?: string;
   status?: TaskStatus;
+  checklistItems?: TaskChecklistItemCreateRequest[];
 }
 
 export interface TaskStatusUpdateRequest {
@@ -76,4 +80,24 @@ export interface TaskComment {
 
 export interface TaskCommentCreateRequest {
   content: string;
+}
+
+export interface TaskChecklistItem {
+  id: string;
+  taskId: string;
+  content: string;
+  isCompleted: boolean;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TaskChecklistItemCreateRequest {
+  content: string;
+  isCompleted?: boolean;
+}
+
+export interface TaskChecklistItemUpdateRequest {
+  content?: string;
+  isCompleted?: boolean;
 }
