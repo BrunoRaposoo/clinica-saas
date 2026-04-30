@@ -534,6 +534,7 @@ model Task {
   createdByUser  User         @relation("CreatedTasks", fields: [createdBy], references: [id])
   comments      TaskComment[]
   audits       TaskAudit[]
+  checklistItems TaskChecklistItem[]
 
   @@index([organizationId])
   @@index([assignedTo])
@@ -575,6 +576,21 @@ model TaskAudit {
   @@index([taskId])
   @@index([performedBy])
   @@map("task_audits")
+}
+
+model TaskChecklistItem {
+  id          String   @id @default(uuid())
+  taskId      String
+  content     String
+  isCompleted Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  task Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@map("task_checklist_items")
 }
 
 model Charge {

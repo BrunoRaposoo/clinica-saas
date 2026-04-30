@@ -18,6 +18,8 @@ export default function NewTaskPage() {
     appointmentId: undefined as string | undefined,
     assignedTo: undefined as string | undefined,
   });
+  const [checklistItems, setChecklistItems] = useState<{ content: string }[]>([]);
+  const [newItem, setNewItem] = useState('');
 
   const createTask = useMutation({
     mutationFn: (data: typeof formData) => tasksApi.create({
@@ -28,6 +30,7 @@ export default function NewTaskPage() {
       patientId: data.patientId,
       appointmentId: data.appointmentId,
       assignedTo: data.assignedTo,
+      checklistItems: checklistItems.length > 0 ? checklistItems : undefined,
     }),
     onSuccess: () => {
       router.push('/tasks');
@@ -40,6 +43,13 @@ export default function NewTaskPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createTask.mutate(formData);
+  };
+
+  const handleAddItem = () => {
+    if (newItem.trim()) {
+      setChecklistItems([...checklistItems, { content: newItem.trim() }]);
+      setNewItem('');
+    }
   };
 
   return (
@@ -107,6 +117,46 @@ export default function NewTaskPage() {
           value={formData.assignedTo}
           onChange={(assignedTo) => setFormData({ ...formData, assignedTo })}
         />
+
+        <div className="border rounded-lg p-4">
+          <label className="block text-sm font-medium mb-2">Checklist (opcional)</label>
+          <div className="space-y-2 mb-3">
+            {checklistItems.map((item, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <span className="text-sm flex-1">{item.content}</span>
+                <button
+                  type="button"
+                  onClick={() => setChecklistItems(items => items.filter((_, i) => i !== index))}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newItem}
+              onChange={(e) => setNewItem(e.target.value)}
+              placeholder="Adicionar item..."
+              className="flex-1 px-3 py-2 text-sm border rounded"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddItem();
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleAddItem}
+              className="px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm"
+            >
+              Add
+            </button>
+          </div>
+        </div>
 
         <div className="flex gap-4">
           <button
