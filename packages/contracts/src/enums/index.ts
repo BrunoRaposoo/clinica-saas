@@ -5,6 +5,14 @@ export enum UserRole {
   RECEPTIONIST = 'receptionist',
 }
 
+export enum SystemRole {
+  SUPER_ADMIN = 'super_admin',
+  ORG_ADMIN = 'org_admin',
+  PROFESSIONAL = 'professional',
+  RECEPTIONIST = 'receptionist',
+  SUPPORT = 'support',
+}
+
 export enum ProfessionalSpecialty {
   NUTRITIONIST = 'nutritionist',
   PSYCHOLOGIST = 'psychologist',
@@ -12,15 +20,6 @@ export enum ProfessionalSpecialty {
   DENTIST = 'dentist',
   GENERAL_PRACTITIONER = 'general_practitioner',
   OTHER = 'other',
-}
-
-export enum AppointmentStatus {
-  SCHEDULED = 'scheduled',
-  CONFIRMED = 'confirmed',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-  NO_SHOW = 'no_show',
 }
 
 export enum PaymentStatus {

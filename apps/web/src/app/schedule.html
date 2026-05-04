@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agenda - Clínica SaaS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div id="app" class="flex">
+    <aside class="w-64 bg-white shadow-md min-h-screen">
+      <div class="p-4 border-b">
+        <h1 class="text-xl font-bold text-blue-600">Clínica SaaS</h1>
+      </div>
+      <nav class="mt-4">
+        <a href="/dashboard.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Dashboard</a>
+        <a href="/patients.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Pacientes</a>
+        <a href="/schedule.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 bg-blue-50 text-blue-600">Agenda</a>
+        <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Configurações</a>
+      </nav>
+    </aside>
+
+    <main class="flex-1 p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Agenda</h2>
+        <div class="flex gap-2">
+          <select v-model="view" class="px-4 py-2 border rounded">
+            <option value="day">Dia</option>
+            <option value="week">Semana</option>
+            <option value="month">Mês</option>
+          </select>
+          <a href="/appointments-new.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            + Novo Agendamento
+          </a>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <div class="flex gap-4 items-center">
+          <button @click="changePeriod(-1)" class="px-3 py-1 border rounded">←</button>
+          <input type="date" v-model="currentDate" class="px-4 py-2 border rounded">
+          <button @click="changePeriod(1)" class="px-3 py-1 border rounded">→</button>
+          <button @click="today" class="px-4 py-2 border rounded">Hoje</button>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div v-if="loading" class="p-8 text-center">Carregando...</div>
+        <div v-else-if="calendar.days && calendar.days.length">
+          <div v-for="day in calendar.days" :key="day.date" class="border-b p-4">
+            <h3 class="font-semibold mb-3">{{ formatDate(day.date) }} ({{ day.slots.length }} horários)</h3>
+            <div class="grid grid-cols-4 gap-2">
+              <div v-for="slot in day.slots" :key="slot.time" 
+                   :class="getSlotClass(slot)"
+                   class="p-2 rounded text-sm">
+                <div class="font-medium">{{ slot.time }}</div>
+                <div v-if="slot.appointment" class="text-xs mt-1">
+                  <div class="truncate">{{ slot.appointment.patient }}</div>
+                  <div class="text-gray-500">{{ slot.appointment.professional }}</div>
+                  <span :class="getStatusClass(slot.appointment.status)" class="text-xs">
+                    {{ getStatusLabel(slot.appointment.status) }}
+                  </span>
+                </div>
+                <div v-else-if="slot.blocked" class="text-xs text-red-500">
+                  {{ slot.blocked.reason }}
+                </div>
+                <div v-else class="text-xs text-green-500">
+                  Disponível
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else class="p-8 text-center text-gray-500">
+          Nenhum agendamento neste período.
+        </div>
+      </div>
+
+      <div v-if="error" class="mt-4 p-4 bg-red-100 text-red-700 rounded">{{ error }}</div>
+    </main>
+  </div>
+
+  <script>
+    const { createApp, ref, onMounted, watch } = Vue;
+
+    createApp({
+      setup() {
+        const API_URL = 'http://localhost:3001/api/v1';
+        const accessToken = localStorage.getItem('accessToken');
+        
+        const view = ref('week');
+        const currentDate = ref(new Date().toISOString().split('T')[0]);
+        const loading = ref(false);
+        const error = ref('');
+        const calendar = ref({ days: [] });
+
+        const loadCalendar = async () => {
+          if (!accessToken) { window.location.href = '/login.html'; return; }
+          loading.value = true;
+          error.value = '';
+          
+          try {
+            const startDate = new Date(currentDate.value);
+            const endDate = new Date(currentDate.value);
+            if (view.value === 'week') endDate.setDate(endDate.getDate() + 7);
+            else if (view.value === 'month') endDate.setMonth(endDate.getMonth() + 1);
+            else endDate.setDate(endDate.getDate() + 1);
+
+            const params = new URLSearchParams({
+              startDate: startDate.toISOString(),
+              endDate: endDate.toISOString(),
+              view: view.value,
+            });
+
+            const res = await fetch(API_URL + '/appointments/calendar?' + params, {
+              headers: { 'Authorization': 'Bearer ' + accessToken }
+            });
+
+            if (!res.ok) throw new Error('Erro ao carregar agenda');
+            calendar.value = await res.json();
+          } catch (e) { error.value = e.message; } 
+          finally { loading.value = false; }
+        };
+
+        const changePeriod = (delta) => {
+          const d = new Date(currentDate.value);
+          if (view.value === 'week') d.setDate(d.getDate() + (delta * 7));
+          else if (view.value === 'month') d.setMonth(d.getMonth() + delta);
+          else d.setDate(d.getDate() + delta);
+          currentDate.value = d.toISOString().split('T')[0];
+        };
+
+        const today = () => { currentDate.value = new Date().toISOString().split('T')[0]; };
+        const formatDate = (d) => new Date(d).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+        const getSlotClass = (s) => s.appointment ? 'bg-blue-50 border-blue-200' : s.blocked ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200';
+        const getStatusClass = (st) => ({ scheduled: 'text-blue-600', confirmed: 'text-green-600', in_progress: 'text-yellow-600', completed: 'text-gray-600', cancelled: 'text-red-600', no_show: 'text-orange-600' })[st] || '';
+        const getStatusLabel = (st) => ({ scheduled: 'Agendado', confirmed: 'Confirmado', in_progress: 'Em andamento', completed: 'Concluído', cancelled: 'Cancelado', no_show: 'Faltou' })[st] || st;
+
+        watch([currentDate, view], loadCalendar);
+        onMounted(loadCalendar);
+
+        return { view, currentDate, loading, error, calendar, changePeriod, today, formatDate, getSlotClass, getStatusClass, getStatusLabel };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

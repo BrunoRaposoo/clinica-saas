@@ -1,1 +1,62 @@
-node_modules
+# dependencies
+node_modules/
+
+# build outputs
+dist/
+build/
+out/
+
+# Next.js
+.next/
+.vercel/
+
+# coverage
+coverage/
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.local
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Prisma
+apps/api/prisma/generated/
+**/prisma/generated/
+
+# caches
+.cache/
+.turbo/
+.nx/
+.eslintcache
+
+# test / temp
+tmp/
+temp/
+
+# optional local artifacts
+uploads/
+storage/
+
+# Monorepo packages dist
+packages/*/dist/
+packages/contracts/dist/
+packages/shared/dist/
+packages/ui/dist/
+
+# Worktrees
+.worktrees/

@@ -2,11 +2,19 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api/v1');
+
+  const corsOrigins = process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001';
+  app.enableCors({
+    origin: corsOrigins.split(','),
+    credentials: true,
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -15,6 +23,10 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
+
+  app.useGlobalInterceptors(new LoggingInterceptor());
+
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   const config = new DocumentBuilder()
     .setTitle('Clínica SaaS API')
@@ -27,9 +39,11 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = process.env.PORT || 3001;
-  await app.listen(port);
+  const host = process.env.HOST || '0.0.0.0';
+  await app.listen(port, host);
   console.log(`🚀 API running on http://localhost:${port}`);
   console.log(`📚 Swagger docs at http://localhost:${port}/api/docs`);
+  console.log(`🛡️ Rate limiting enabled`);
 }
 
 bootstrap();

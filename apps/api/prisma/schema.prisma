@@ -7,88 +7,823 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Clinic {
+model Organization {
   id        String   @id @default(uuid())
   name      String
   document  String   @unique
   email     String?
   phone     String?
   address   String?
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users         User[]
-  professionals Professional[]
-  patients      Patient[]
-  appointments  Appointment[]
+  users             User[]
+  patients          Patient[]
+  appointments      Appointment[]
+  professionals     Professional[]
+  appointmentTypes  AppointmentType[]
+  scheduleBlocks    ScheduleBlock[]
+  waitingLists      WaitingList[]
+  messageTemplates MessageTemplate[]
+  communications    Communication[]
+  messageJobs      MessageJob[]
+  documents        Document[]
+  tasks           Task[]
+  charges        Charge[]
+  settings              OrganizationSettings?
+  units                 Unit[]
+  serviceTypes          ServiceType[]
+  schedulePreferences  SchedulePreferences?
+  communicationPreferences CommunicationPreferences?
+  auditLogs           AuditLog[]
+  integrations       Integration[]
+  automations        Automation[]
 
-  @@map("clinics")
+  @@index([isActive])
+  @@map("organizations")
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  password  String
-  role      String
-  clinicId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String    @id @default(uuid())
+  email          String    @unique
+  password       String
+  name           String
+  organizationId String?
+  roleId         String    @default("00000000-0000-0000-0000-000000000001")
+  isActive       Boolean   @default(true)
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  clinic        Clinic?       @relation(fields: [clinicId], references: [id])
-  professional  Professional?
+  organization         Organization?        @relation(fields: [organizationId], references: [id])
+  role                 Role                 @relation(fields: [roleId], references: [id])
+  passwordResetTokens  PasswordResetToken[]
+  refreshTokens        RefreshToken[]
+  patientAudits        PatientAudit[]
+  professional         Professional?
+  cancelledAppointments Appointment[] @relation("CancelledByUser")
+  appointmentAudits    AppointmentAudit[]
+  communicationAudits CommunicationAudit[]
+  uploadedDocuments   Document[]
+  documentAudits     DocumentAudit[]
+  assignedTasks    Task[]         @relation("AssignedToUser")
+  createdTasks    Task[]         @relation("CreatedTasks")
+  taskComments    TaskComment[]
+  taskAudits     TaskAudit[]
+  createdCharges Charge[]
+  chargeAudits   ChargeAudit[]
+  auditLogs     AuditLog[]
 
+  @@index([email])
+  @@index([organizationId])
   @@map("users")
 }
 
-model Professional {
-  id         String   @id @default(uuid())
-  userId     String   @unique
-  clinicId   String
-  specialty  String
-  document   String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  user         User         @relation(fields: [userId], references: [id])
-  clinic       Clinic       @relation(fields: [clinicId], references: [id])
-  appointments Appointment[]
+  users       User[]
+  permissions RolePermission[]
 
-  @@map("professionals")
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String @id @default(uuid())
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("refresh_tokens")
 }
 
 model Patient {
-  id        String   @id @default(uuid())
-  clinicId  String
-  name      String
-  email     String?
-  phone     String?
-  document  String?
-  birthDate DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String    @id @default(uuid())
+  organizationId   String
+  name             String
+  email            String?
+  phone            String?
+  document         String?
+  birthDate        DateTime?
+  gender           String?
+  addressStreet    String?
+  addressNumber    String?
+  addressComplement String?
+  addressDistrict  String?
+  addressCity      String?
+  addressState     String?
+  addressZipCode   String?
+  notes            String?
+  tags             String[]
+  isActive         Boolean   @default(true)
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  clinic       Clinic       @relation(fields: [clinicId], references: [id])
+  organization Organization     @relation(fields: [organizationId], references: [id])
+  contacts     PatientContact[]
+  audits       PatientAudit[]
   appointments Appointment[]
+  waitingLists WaitingList[]
+  communications Communication[]
+  documents    Document[]
+  tasks       Task[]
+  charges    Charge[]
 
+  @@index([organizationId])
+  @@index([name])
+  @@index([document])
+  @@index([phone])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@index([createdAt])
   @@map("patients")
 }
 
-model Appointment {
-  id           String   @id @default(uuid())
-  clinicId     String
-  patientId    String
-  professionalId String
-  status       String   @default("scheduled")
-  startDate    DateTime
-  endDate      DateTime
-  notes        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+model PatientContact {
+  id          String   @id @default(uuid())
+  patientId   String
+  name        String
+  relationship String
+  phone       String?
+  email       String?
+  isPrimary   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  clinic       Clinic       @relation(fields: [clinicId], references: [id])
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@map("patient_contacts")
+}
+
+model PatientAudit {
+  id          String   @id @default(uuid())
+  patientId   String
+  action      String
+  changes     Json?
+  performedBy String
+  performedAt DateTime @default(now())
+
+  patient        Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  performedByUser User    @relation(fields: [performedBy], references: [id])
+
+  @@index([patientId])
+  @@index([performedBy])
+  @@index([performedAt])
+  @@map("patient_audits")
+}
+
+model Professional {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  organizationId   String
+  specialty        String   @default("")
+  registerNumber  String?
+  appointmentTypeId String?
+  color            String   @default("#3B82F6")
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User            @relation(fields: [userId], references: [id])
+  organization     Organization    @relation(fields: [organizationId], references: [id])
+  appointmentType  AppointmentType? @relation(fields: [appointmentTypeId], references: [id])
+  appointments     Appointment[]
+  scheduleBlocks   ScheduleBlock[]
+  waitingLists     WaitingList[]
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@index([userId])
+  @@map("professionals")
+}
+
+model AppointmentType {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  duration       Int      @default(30)
+  color          String   @default("#3B82F6")
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization  Organization  @relation(fields: [organizationId], references: [id])
+  appointments  Appointment[]
+  professionals Professional[]
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@map("appointment_types")
+}
+
+model Appointment {
+  id                 String    @id @default(uuid())
+  organizationId     String
+  patientId          String
+  professionalId      String
+  appointmentTypeId   String?
+  status             String    @default("scheduled")
+  startDate          DateTime
+  endDate            DateTime
+  duration           Int
+  notes              String?
+  cancellationReason String?
+  cancelledBy        String?
+  cancelledAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  organization     Organization    @relation(fields: [organizationId], references: [id])
+  patient          Patient         @relation(fields: [patientId], references: [id])
+  professional    Professional     @relation(fields: [professionalId], references: [id])
+  appointmentType AppointmentType? @relation(fields: [appointmentTypeId], references: [id])
+  cancelledByUser User?            @relation("CancelledByUser", fields: [cancelledBy], references: [id])
+  audits          AppointmentAudit[]
+  communications  Communication[]
+  messageJobs    MessageJob[]
+  documents      Document[]
+  tasks         Task[]
+  charges       Charge[]
+
+  @@index([organizationId])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([professionalId])
+  @@index([patientId])
+  @@index([status])
+  @@index([professionalId, startDate])
+  @@map("appointments")
+}
+
+model AppointmentAudit {
+  id            String   @id @default(uuid())
+  appointmentId String
+  action        String
+  changes       Json?
+  performedBy   String
+  performedAt   DateTime @default(now())
+
+  appointment  Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  performedByUser User     @relation(fields: [performedBy], references: [id])
+
+  @@index([appointmentId])
+  @@index([performedBy])
+  @@index([performedAt])
+  @@map("appointment_audits")
+}
+
+model ScheduleBlock {
+  id             String   @id @default(uuid())
+  organizationId String
+  professionalId String
+  startDate      DateTime
+  endDate        DateTime
+  reason         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([professionalId])
+  @@index([startDate])
+  @@index([endDate])
+  @@map("schedule_blocks")
+}
+
+model WaitingList {
+  id             String   @id @default(uuid())
+  organizationId String
+  patientId      String
+  professionalId String
+  preferredDate  DateTime?
+  notes          String?
+  status         String   @default("waiting")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
   patient      Patient      @relation(fields: [patientId], references: [id])
   professional Professional @relation(fields: [professionalId], references: [id])
 
-  @@map("appointments")
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([professionalId])
+  @@index([status])
+  @@map("waiting_lists")
+}
+
+model MessageTemplate {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  channel        String
+  type           String
+  subject        String?
+  body           String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  communications  Communication[]
+
+  @@index([organizationId])
+  @@index([channel])
+  @@index([type])
+  @@index([isActive])
+  @@map("message_templates")
+}
+
+model Communication {
+  id               String    @id @default(uuid())
+  organizationId   String
+  patientId        String
+  appointmentId   String?
+  templateId       String?
+  channel         String
+  type            String
+  recipient       String
+  message         String
+  status          String    @default("pending")
+  provider        String?
+  providerMessageId String?
+  errorMessage     String?
+  scheduledAt     DateTime
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  createdAt       DateTime  @default(now())
+
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  patient        Patient          @relation(fields: [patientId], references: [id])
+  appointment   Appointment?     @relation(fields: [appointmentId], references: [id])
+  template      MessageTemplate?  @relation(fields: [templateId], references: [id])
+  audits        CommunicationAudit[]
+
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([appointmentId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("communications")
+}
+
+model CommunicationAudit {
+  id              String   @id @default(uuid())
+  communicationId String
+  action          String
+  changes         Json?
+  performedBy    String
+  performedAt    DateTime @default(now())
+
+  communication Communication @relation(fields: [communicationId], references: [id], onDelete: Cascade)
+  performedByUser User        @relation(fields: [performedBy], references: [id])
+
+  @@index([communicationId])
+  @@index([performedBy])
+  @@index([performedAt])
+  @@map("communication_audits")
+}
+
+model MessageJob {
+  id             String   @id @default(uuid())
+  organizationId String
+  type           String
+  appointmentId String
+  scheduledFor   DateTime
+  status         String   @default("pending")
+  retryCount     Int      @default(0)
+  lastError      String?
+  createdAt      DateTime @default(now())
+  processedAt   DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  appointment Appointment  @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([status, scheduledFor])
+  @@index([appointmentId])
+  @@map("message_jobs")
+}
+
+model Document {
+  id              String    @id @default(uuid())
+  organizationId  String
+  patientId       String?
+  appointmentId  String?
+  category       String
+  type           String
+  name           String
+  description    String?
+  fileName       String
+  filePath       String
+  fileSize       Int
+  mimeType       String
+  storageProvider String    @default("local")
+  storageKey     String
+  isPublic       Boolean   @default(false)
+  expiresAt      DateTime?
+  uploadedBy     String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization      Organization       @relation(fields: [organizationId], references: [id])
+  patient         Patient?             @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointment    Appointment?        @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  uploadedByUser User                @relation(fields: [uploadedBy], references: [id])
+  audits         DocumentAudit[]
+
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([appointmentId])
+  @@index([organizationId, category])
+  @@index([createdAt])
+  @@index([uploadedBy])
+  @@map("documents")
+}
+
+model DocumentAudit {
+  id           String   @id @default(uuid())
+  documentId   String
+  action      String
+  changes     Json?
+  performedBy String
+  performedAt DateTime @default(now())
+
+  document     Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  performedByUser User    @relation(fields: [performedBy], references: [id])
+
+  @@index([documentId])
+  @@index([performedBy])
+  @@map("document_audits")
+}
+
+model Task {
+  id              String    @id @default(uuid())
+  organizationId   String
+  patientId       String?
+  appointmentId  String?
+  title         String
+  description   String?
+  status        String   @default("pending")
+  priority     String   @default("medium")
+  assignedTo    String?
+  dueDate       DateTime?
+  completedAt   DateTime?
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  organization     Organization    @relation(fields: [organizationId], references: [id])
+  patient        Patient?        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointment   Appointment?   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  assignedToUser User?       @relation("AssignedToUser", fields: [assignedTo], references: [id])
+  createdByUser  User         @relation("CreatedTasks", fields: [createdBy], references: [id])
+  comments      TaskComment[]
+  audits       TaskAudit[]
+  checklistItems TaskChecklistItem[]
+
+  @@index([organizationId])
+  @@index([assignedTo])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([patientId])
+  @@index([appointmentId])
+  @@index([createdBy])
+  @@map("tasks")
+}
+
+model TaskComment {
+  id        String   @id @default(uuid())
+  taskId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  task Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User  @relation(fields: [userId], references: [id])
+
+  @@index([taskId])
+  @@index([userId])
+  @@map("task_comments")
+}
+
+model TaskAudit {
+  id          String   @id @default(uuid())
+  taskId      String
+  action      String
+  changes     Json?
+  performedBy String
+  performedAt DateTime @default(now())
+
+  task  Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [performedBy], references: [id])
+
+  @@index([taskId])
+  @@index([performedBy])
+  @@map("task_audits")
+}
+
+model TaskChecklistItem {
+  id          String   @id @default(uuid())
+  taskId      String
+  content     String
+  isCompleted Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  task Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@map("task_checklist_items")
+}
+
+model Charge {
+  id              String    @id @default(uuid())
+  organizationId  String
+  patientId       String?
+  appointmentId  String?
+  description     String
+  amount          Decimal   @db.Decimal(10, 2)
+  dueDate         DateTime
+  status          String   @default("pending")
+  paidAt          DateTime?
+  paymentMethod   String?
+  notes           String?
+  createdBy       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  patient       Patient?        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointment   Appointment?   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  createdByUser User           @relation(fields: [createdBy], references: [id])
+  audits        ChargeAudit[]
+
+  @@index([organizationId])
+  @@index([patientId])
+  @@index([appointmentId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([createdBy])
+  @@map("charges")
+}
+
+model ChargeAudit {
+  id          String   @id @default(uuid())
+  chargeId    String
+  action      String
+  changes     Json?
+  performedBy String
+  performedAt DateTime @default(now())
+
+  charge  Charge @relation(fields: [chargeId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [performedBy], references: [id])
+
+  @@index([chargeId])
+  @@index([performedBy])
+  @@map("charge_audits")
+}
+
+model OrganizationSettings {
+  id             String   @id @default(uuid())
+  organizationId String   @unique
+  businessName   String
+  tradeName      String?
+  logo           String?
+  email          String
+  phone          String?
+  address        String?
+  city           String?
+  state          String?
+  zipCode        String?
+  timezone       String   @default("America/Sao_Paulo")
+  locale         String   @default("pt-BR")
+  currency       String   @default("BRL")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("organization_settings")
+}
+
+model Unit {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  address        String?
+  phone          String?
+  isActive      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@map("units")
+}
+
+model ServiceType {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  duration       Int      @default(30)
+  price          Decimal? @db.Decimal(10, 2)
+  color          String?
+  isActive      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@map("service_types")
+}
+
+model SchedulePreferences {
+  id                String   @id @default(uuid())
+  organizationId     String   @unique
+  defaultDuration   Int      @default(30)
+  minInterval       Int      @default(15)
+  maxAdvanceDays   Int      @default(60)
+  allowOverbooking Boolean  @default(false)
+  requireConfirmation Boolean @default(true)
+  startWorkHour     String   @default("08:00")
+  endWorkHour     String   @default("18:00")
+  workDays         Json     @default("[1,2,3,4,5]")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("schedule_preferences")
+}
+
+model CommunicationPreferences {
+  id                   String   @id @default(uuid())
+  organizationId        String   @unique
+  defaultChannel       String   @default("email")
+  sendAppointmentReminder Boolean  @default(true)
+  reminderHoursBefore   Int      @default(24)
+  sendPaymentReminder Boolean  @default(true)
+  reminderDaysBefore  Int      @default(3)
+  defaultEmailTemplate String?
+  defaultSmsTemplate  String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("communication_preferences")
+}
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  organizationId  String
+  userId         String
+  action         String
+  entity        String
+  entityId      String?
+  changes       Json?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model Integration {
+  id              String    @id @default(uuid())
+  organizationId  String
+  provider        String
+  providerConfig Json?
+  credentials     Json?
+  isActive        Boolean   @default(true)
+  lastSyncAt      DateTime?
+  status          String    @default("disconnected")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  organization    Organization   @relation(fields: [organizationId], references: [id])
+  logs            IntegrationLog[]
+
+  @@index([organizationId])
+  @@index([provider])
+  @@index([status])
+  @@map("integrations")
+}
+
+model IntegrationLog {
+  id               String    @id @default(uuid())
+  integrationId     String
+  event            String
+  status           String
+  errorMessage     String?
+  requestPayload   Json?
+  responsePayload  Json?
+  createdAt        DateTime  @default(now())
+
+  integration      Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@index([integrationId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("integration_logs")
+}
+
+model Automation {
+  id              String    @id @default(uuid())
+  organizationId  String
+  name            String
+  event           String
+  action          String
+  config          Json
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([event])
+  @@index([isActive])
+  @@map("automations")
+}
+
+model IdempotencyKey {
+  key       String    @id
+  result   Json
+  expiresAt DateTime?
+
+  @@map("idempotency_keys")
 }

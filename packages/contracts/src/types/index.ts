@@ -4,45 +4,106 @@ export interface BaseEntity {
   updatedAt: Date;
 }
 
-export interface Clinic extends BaseEntity {
+export * from './dashboard';
+export * from './integration';
+export * from './auth';
+export * from './patient';
+export * from './appointment';
+export type {
+  MessageTemplate,
+  MessageTemplateListParams,
+  MessageTemplateListResponse,
+  MessageTemplateCreateRequest,
+  MessageTemplateUpdateRequest,
+  Communication,
+  CommunicationListParams,
+  CommunicationListResponse,
+  CommunicationCreateRequest,
+  CommunicationAudit,
+  MessageJob,
+  MessageJobListParams,
+  MessageJobListResponse,
+  MessageChannel,
+  MessageType,
+  CommunicationStatus,
+  JobType,
+  JobStatus,
+  IMessageProvider,
+  SendParams,
+  SendResult,
+} from './communication';
+
+export type {
+  Document,
+  DocumentListParams,
+  DocumentListResponse,
+  DocumentCreateRequest,
+  DocumentUpdateRequest,
+  DocumentAudit,
+  DocumentCategory,
+  DocumentAction,
+  StorageProvider,
+  StorageOptions,
+  StoredFile,
+} from './document';
+
+export type {
+  Task,
+  TaskListParams,
+  TaskListResponse,
+  TaskCreateRequest,
+  TaskUpdateRequest,
+  TaskStatusUpdateRequest,
+  TaskComment,
+  TaskCommentCreateRequest,
+  TaskStatus,
+  TaskPriority,
+  TaskAction,
+  TaskChecklistItem,
+  TaskChecklistItemCreateRequest,
+  TaskChecklistItemUpdateRequest,
+} from './task';
+
+export type {
+  Charge,
+  ChargeListParams,
+  ChargeListResponse,
+  ChargeCreateRequest,
+  ChargeUpdateRequest,
+  ChargePaymentRequest,
+  FinanceDashboard,
+  ChargeStatus,
+  PaymentMethod,
+  ChargeAction,
+} from './charge';
+
+export interface Organization extends BaseEntity {
   name: string;
   document: string;
   email?: string;
   phone?: string;
   address?: string;
+  isActive: boolean;
 }
 
 export interface User extends BaseEntity {
   email: string;
   name: string;
-  role: 'admin' | 'clinic_owner' | 'professional' | 'receptionist';
-  clinicId?: string | null;
+  organizationId?: string | null;
+  roleId: string;
+  isActive: boolean;
+  lastLoginAt?: Date | null;
 }
 
-export interface Professional extends BaseEntity {
-  userId: string;
-  clinicId: string;
-  specialty: string;
-  document?: string;
-}
-
-export interface Patient extends BaseEntity {
-  clinicId: string;
+export interface Role extends BaseEntity {
   name: string;
-  email?: string;
-  phone?: string;
-  document?: string;
-  birthDate?: Date;
+  description?: string | null;
+  isSystem: boolean;
 }
 
-export interface Appointment extends BaseEntity {
-  clinicId: string;
-  patientId: string;
-  professionalId: string;
-  status: string;
-  startDate: Date;
-  endDate: Date;
-  notes?: string;
+export interface Permission extends BaseEntity {
+  name: string;
+  description?: string | null;
 }
 
 export interface ApiError {

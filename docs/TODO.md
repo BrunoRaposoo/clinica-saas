@@ -50,6 +50,9 @@
 ## Fase 9: Financeiro (Reservado)
 - [ ] Módulo financeiro (futuro)
 
+### Financeiro - ToDo Automação
+- [ ] Job automatizado para atualizar status overdue (endpoint manual implementado, para automatizar instalar @nestjs/schedule e configurar cron job)
+
 ---
 
 ## Tarefas Técnicas Pendentes
