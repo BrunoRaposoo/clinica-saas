@@ -6,6 +6,8 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  phone?: string;
+  role: string;
   roleId: string;
   roleName: string;
   organizationId: string;
@@ -19,6 +21,7 @@ export interface CreateUserInput {
   email: string;
   password: string;
   name: string;
+  phone?: string;
   roleId: string;
 }
 
@@ -37,8 +40,9 @@ export const usersApi = {
     return response.json();
   },
 
-  async listUsers(params?: { page?: number; limit?: number }): Promise<{ items: User[]; pagination: any }> {
+  async listUsers(params?: { role?: string; page?: number; limit?: number }): Promise<{ items: User[]; pagination: any }> {
     const searchParams = new URLSearchParams();
+    if (params?.role) searchParams.set('role', params.role);
     if (params?.page) searchParams.set('page', String(params.page));
     if (params?.limit) searchParams.set('limit', String(params.limit));
     

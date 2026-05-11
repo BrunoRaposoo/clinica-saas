@@ -39,6 +39,7 @@ model Organization {
   auditLogs           AuditLog[]
   integrations       Integration[]
   automations        Automation[]
+  specialties       Specialty[]
 
   @@index([isActive])
   @@map("organizations")
@@ -49,6 +50,7 @@ model User {
   email          String    @unique
   password       String
   name           String
+  phone          String?
   organizationId String?
   roleId         String    @default("00000000-0000-0000-0000-000000000001")
   isActive       Boolean   @default(true)
@@ -228,7 +230,7 @@ model Professional {
   id               String   @id @default(uuid())
   userId           String   @unique
   organizationId   String
-  specialty        String   @default("")
+  specialtyId      String?
   registerNumber  String?
   appointmentTypeId String?
   color            String   @default("#3B82F6")
@@ -239,6 +241,7 @@ model Professional {
   user             User            @relation(fields: [userId], references: [id])
   organization     Organization    @relation(fields: [organizationId], references: [id])
   appointmentType  AppointmentType? @relation(fields: [appointmentTypeId], references: [id])
+  specialty        Specialty?      @relation(fields: [specialtyId], references: [id])
   appointments     Appointment[]
   scheduleBlocks   ScheduleBlock[]
   waitingLists     WaitingList[]
@@ -826,4 +829,22 @@ model IdempotencyKey {
   expiresAt DateTime?
 
   @@map("idempotency_keys")
+}
+
+model Specialty {
+  id            String   @id @default(uuid())
+  organizationId String
+  category      String
+  name          String
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  professionals Professional[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([category])
+  @@map("specialties")
 }

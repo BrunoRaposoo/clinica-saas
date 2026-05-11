@@ -22,8 +22,9 @@ export class UsersController {
     @CurrentOrganization() organizationId: string,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
+    @Query('role') role?: string,
   ) {
-    return this.usersService.findAll(organizationId, Number(page) || 1, Number(limit) || 20);
+    return this.usersService.findAll(organizationId, Number(page) || 1, Number(limit) || 20, role);
   }
 
   @Get(':id')

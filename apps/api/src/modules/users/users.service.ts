@@ -10,9 +10,12 @@ export class UsersService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(organizationId?: string, page = 1, limit = DEFAULT_PAGE_SIZE) {
+  async findAll(organizationId?: string, page = 1, limit = DEFAULT_PAGE_SIZE, role?: string) {
     const where = organizationId 
-      ? { organizationId }
+      ? { 
+          organizationId,
+          ...(role && { role: { name: role } }),
+        }
       : {};
 
     const [items, total] = await Promise.all([
@@ -34,8 +37,9 @@ export class UsersService {
         id: user.id,
         email: user.email,
         name: user.name,
+        phone: user.phone,
+        role: user.role.name,
         roleId: user.roleId,
-        roleName: user.role.name,
         organizationId: user.organizationId,
         organizationName: user.organization?.name,
         isActive: user.isActive,
@@ -102,6 +106,7 @@ export class UsersService {
         email: dto.email,
         password: hashedPassword,
         name: dto.name,
+        phone: dto.phone || null,
         organizationId: dto.organizationId || creatorOrganizationId,
         roleId,
       },
@@ -115,8 +120,9 @@ export class UsersService {
       id: user.id,
       email: user.email,
       name: user.name,
+      phone: user.phone,
+      role: user.role.name,
       roleId: user.roleId,
-      roleName: user.role.name,
       organizationId: user.organizationId,
       organizationName: user.organization?.name,
       isActive: user.isActive,

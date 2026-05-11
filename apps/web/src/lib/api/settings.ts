@@ -48,8 +48,9 @@ export interface Professional {
   id: string;
   organizationId: string;
   userId: string;
-  user: { id: string; name: string; email: string };
-  specialty?: string;
+  user: { id: string; name: string; email: string; phone?: string };
+  specialtyId?: string;
+  specialty?: Specialty;
   registerNumber?: string;
   color?: string;
   appointmentTypeId?: string;
@@ -58,6 +59,29 @@ export interface Professional {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Specialty {
+  id: string;
+  organizationId: string;
+  category: string;
+  name: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SpecialtyCategory = 'medical' | 'dental' | 'psychology' | 'nutrition' | 'physiotherapy' | 'complementary' | 'technical' | 'admin';
+
+export const SPECIALTY_CATEGORIES: { value: SpecialtyCategory; label: string }[] = [
+  { value: 'medical', label: 'Médica' },
+  { value: 'dental', label: 'Odontológica' },
+  { value: 'psychology', label: 'Psicologia' },
+  { value: 'nutrition', label: 'Nutrição' },
+  { value: 'physiotherapy', label: 'Fisioterapia' },
+  { value: 'complementary', label: 'Saúde Complementar' },
+  { value: 'technical', label: 'Técnico em Saúde' },
+  { value: 'admin', label: 'Administrativo' },
+];
 
 export interface SchedulePreferences {
   id: string;
@@ -194,7 +218,7 @@ export const settingsApi = {
     return response.json();
   },
 
-  createProfessional: async (data: { userId: string; specialty?: string; registerNumber?: string; color?: string; appointmentTypeId?: string }): Promise<Professional> => {
+  createProfessional: async (data: { userId: string; specialtyId?: string; registerNumber?: string; color?: string; appointmentTypeId?: string }): Promise<Professional> => {
     const response = await authenticatedFetch(`${API_URL}/settings/professionals`, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -245,6 +269,40 @@ export const settingsApi = {
     });
     if (!response.ok) throw new Error('Failed to update communication preferences');
     return response.json();
+  },
+};
+
+export const specialtiesApi = {
+  list: async (params?: { category?: string }): Promise<{ items: Specialty[] }> => {
+    const searchParams = new URLSearchParams();
+    if (params?.category) searchParams.set('category', params.category);
+    const query = searchParams.toString();
+    const response = await authenticatedFetch(`${API_URL}/specialties${query ? `?${query}` : ''}`);
+    if (!response.ok) throw new Error('Failed to fetch specialties');
+    return response.json();
+  },
+
+  create: async (data: { category: string; name: string }): Promise<Specialty> => {
+    const response = await authenticatedFetch(`${API_URL}/specialties`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to create specialty');
+    return response.json();
+  },
+
+  update: async (id: string, data: { name?: string; category?: string; isActive?: boolean }): Promise<Specialty> => {
+    const response = await authenticatedFetch(`${API_URL}/specialties/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to update specialty');
+    return response.json();
+  },
+
+  delete: async (id: string): Promise<void> => {
+    const response = await authenticatedFetch(`${API_URL}/specialties/${id}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error('Failed to delete specialty');
   },
 };
 

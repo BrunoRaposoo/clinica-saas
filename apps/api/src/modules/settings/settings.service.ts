@@ -226,7 +226,8 @@ export class SettingsService {
         take: limit,
         orderBy: [{ isActive: 'desc' }, { user: { name: 'asc' } }],
         include: {
-          user: { select: { id: true, name: true, email: true } },
+          user: { select: { id: true, name: true, email: true, phone: true } },
+          specialty: true,
         },
       }),
       this.prisma.professional.count({ where }),
@@ -238,6 +239,7 @@ export class SettingsService {
         organizationId: item.organizationId,
         userId: item.userId,
         user: item.user,
+        specialtyId: item.specialtyId,
         specialty: item.specialty,
         registerNumber: item.registerNumber,
         color: item.color,
@@ -250,11 +252,12 @@ export class SettingsService {
     };
   }
 
-  async getProfessionalById(id: string, organizationId: string) {
+async getProfessionalById(id: string, organizationId: string) {
     const professional = await this.prisma.professional.findFirst({
       where: { id, organizationId },
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        user: true,
+        specialty: true,
       },
     });
 
@@ -264,6 +267,7 @@ export class SettingsService {
       organizationId: professional.organizationId,
       userId: professional.userId,
       user: professional.user,
+      specialtyId: professional.specialtyId,
       specialty: professional.specialty,
       registerNumber: professional.registerNumber,
       color: professional.color,
@@ -289,17 +293,25 @@ export class SettingsService {
 
     if (existingProfessional) throw new BadRequestException('Usuário já é profissional');
 
+    if (dto.specialtyId) {
+      const specialty = await this.prisma.specialty.findFirst({
+        where: { id: dto.specialtyId, organizationId, isActive: true },
+      });
+      if (!specialty) throw new NotFoundException('Especialidade não encontrada');
+    }
+
     return this.prisma.professional.create({
       data: {
         organizationId,
         userId: dto.userId,
-        specialty: dto.specialty,
+        specialtyId: dto.specialtyId || null,
         registerNumber: dto.registerNumber,
         color: dto.color,
         appointmentTypeId: dto.appointmentTypeId,
       },
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true, email: true, phone: true } },
+        specialty: true,
       },
     });
   }
@@ -313,9 +325,15 @@ export class SettingsService {
 
     return this.prisma.professional.update({
       where: { id },
-      data: dto,
+      data: {
+        registerNumber: dto.registerNumber,
+        color: dto.color,
+        appointmentTypeId: dto.appointmentTypeId,
+        isActive: dto.isActive,
+      },
       include: {
         user: { select: { id: true, name: true, email: true } },
+        specialty: true,
       },
     });
   }

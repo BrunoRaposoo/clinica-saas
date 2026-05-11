@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsOptional, IsUUID, IsBoolean, MinLength } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsUUID, IsBoolean, MinLength, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateUserDto {
@@ -15,6 +15,12 @@ export class CreateUserDto {
   @IsString()
   @MinLength(2, { message: 'Nome deve ter pelo menos 2 caracteres' })
   name: string;
+
+  @ApiPropertyOptional({ example: '(11) 99999-9999' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  phone?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
