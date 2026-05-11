@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { SPECIALTY_CATEGORIES, type Specialty, specialtiesApi, settingsApi } from '@/lib/api/settings';
 import { usersApi, type User } from '@/lib/api/users';
 import { PasswordInput } from '@/components/forms/password-input';
+import { PhoneInput } from '@/components/forms/phone-input';
 import { useRole } from '@/hooks/use-role';
 
 type Tab = 'professionals' | 'receptionists';
@@ -247,12 +248,10 @@ export default function TeamPage() {
 
               <div>
                 <label className="block text-sm font-medium mb-1">Telefone</label>
-                <input
-                  type="tel"
+                <PhoneInput
                   value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full px-3 py-2 border rounded"
-                  placeholder="(11) 99999-9999"
+                  onChange={(value) => setForm({ ...form, phone: value })}
+                  className="w-full"
                 />
               </div>
 
