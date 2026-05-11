@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsOptional, IsNotEmpty, MaxLength, IsDateString } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsNotEmpty, MaxLength, IsDateString, IsUUID } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 
@@ -185,11 +185,10 @@ export class ProfessionalDto {
   @IsNotEmpty()
   userId: string;
 
-  @ApiPropertyOptional({ example: 'Cardiologia' })
+  @ApiPropertyOptional({ example: 'uuid-da-especialidade' })
   @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  specialty?: string;
+  @IsUUID()
+  specialtyId?: string;
 
   @ApiPropertyOptional({ example: 'CRM/SP 123456' })
   @IsOptional()
@@ -304,4 +303,35 @@ export class CommunicationPreferencesDto {
   @IsOptional()
   @IsString()
   defaultSmsTemplate?: string;
+}
+
+export class CreateSpecialtyDto {
+  @ApiProperty({ example: 'medical', enum: ['medical', 'dental', 'psychology', 'nutrition', 'physiotherapy', 'complementary', 'technical', 'admin'] })
+  @IsString()
+  @IsNotEmpty()
+  category: string;
+
+  @ApiProperty({ example: 'Cardiologia' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name: string;
+}
+
+export class UpdateSpecialtyDto {
+  @ApiPropertyOptional({ example: 'medical', enum: ['medical', 'dental', 'psychology', 'nutrition', 'physiotherapy', 'complementary', 'technical', 'admin'] })
+  @IsOptional()
+  @IsString()
+  category?: string;
+
+  @ApiPropertyOptional({ example: 'Cardiologia' })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  isActive?: boolean;
 }

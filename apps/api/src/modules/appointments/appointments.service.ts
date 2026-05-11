@@ -30,7 +30,7 @@ export class AppointmentsService {
         orderBy: { startDate: 'asc' },
         include: {
           patient: { select: { id: true, name: true } },
-          professional: { include: { user: { select: { name: true } } } },
+          professional: { include: { user: { select: { name: true } }, specialty: true } },
           appointmentType: true,
         },
       }),
@@ -58,7 +58,8 @@ export class AppointmentsService {
         professional: item.professional ? {
           id: item.professional.id,
           name: item.professional.user.name,
-          specialty: item.professional.specialty,
+          specialty: item.professional.specialty?.name,
+          specialtyId: item.professional.specialtyId,
           color: item.professional.color,
         } : undefined,
         appointmentType: item.appointmentType ? {
@@ -77,7 +78,7 @@ export class AppointmentsService {
       where: { id, organizationId },
       include: {
         patient: true,
-        professional: { include: { user: true } },
+        professional: { include: { user: true, specialty: true } },
         appointmentType: true,
         audits: { include: { performedByUser: { select: { name: true } } }, orderBy: { performedAt: 'desc' } },
       },
@@ -96,7 +97,8 @@ export class AppointmentsService {
       professional: {
         id: appointment.professional.id,
         name: appointment.professional.user.name,
-        specialty: appointment.professional.specialty,
+        specialty: appointment.professional.specialty?.name,
+        specialtyId: appointment.professional.specialtyId,
         color: appointment.professional.color,
       },
       appointmentType: appointment.appointmentType ? {
@@ -311,7 +313,7 @@ export class AppointmentsService {
       where,
       include: {
         patient: { select: { id: true, name: true, phone: true, email: true, document: true } },
-        professional: { include: { user: { select: { name: true } } } },
+        professional: { include: { user: { select: { name: true } }, specialty: true } },
         appointmentType: true,
       },
       orderBy: { startDate: 'asc' },
@@ -356,9 +358,9 @@ export class AppointmentsService {
                 email: appointment.patient.email,
                 document: appointment.patient.document,
               },
-              professional: {
+professional: {
                 name: appointment.professional.user.name,
-                specialty: appointment.professional.specialty,
+                specialty: appointment.professional.specialty?.name,
                 color: appointment.professional.color,
               },
               appointmentType: appointment.appointmentType

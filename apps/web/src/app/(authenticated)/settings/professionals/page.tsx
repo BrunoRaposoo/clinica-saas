@@ -12,7 +12,7 @@ interface ProfessionalForm {
   name: string;
   email: string;
   password: string;
-  specialty: string;
+  specialtyId: string;
   registerNumber: string;
   color: string;
   appointmentTypeId: string;
@@ -38,7 +38,7 @@ export default function ProfessionalsPage() {
     name: '',
     email: '',
     password: '',
-    specialty: '',
+    specialtyId: '',
     registerNumber: '',
     color: '#3B82F6',
     appointmentTypeId: '',
@@ -79,7 +79,7 @@ export default function ProfessionalsPage() {
 
       await settingsApi.createProfessional({
         userId: user.id,
-        specialty: data.specialty || undefined,
+        specialtyId: data.specialtyId || undefined,
         registerNumber: data.registerNumber || undefined,
         color: data.color,
         appointmentTypeId: data.appointmentTypeId || undefined,
@@ -91,7 +91,7 @@ export default function ProfessionalsPage() {
         name: '',
         email: '',
         password: '',
-        specialty: '',
+        specialtyId: '',
         registerNumber: '',
         color: '#3B82F6',
         appointmentTypeId: '',
@@ -216,10 +216,10 @@ export default function ProfessionalsPage() {
                 <label className="block text-sm font-medium mb-1">Especialidade</label>
                 <input
                   type="text"
-                  value={form.specialty}
-                  onChange={(e) => setForm({ ...form, specialty: e.target.value })}
+                  value={form.specialtyId}
+                  onChange={(e) => setForm({ ...form, specialtyId: e.target.value })}
                   className="w-full px-3 py-2 border rounded"
-                  placeholder="Ex: Cardiologia"
+                  placeholder="ID da especialidade"
                 />
               </div>
               
@@ -295,7 +295,7 @@ export default function ProfessionalsPage() {
                 <tr key={p.id} className="border-b">
                   <td className="py-2">{p.user.name}</td>
                   <td className="py-2">{p.user.email}</td>
-                  <td className="py-2">{p.specialty || '-'}</td>
+                  <td className="py-2">{p.specialty?.name || '-'}</td>
                   <td className="py-2">
                     <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">
                       Ativo

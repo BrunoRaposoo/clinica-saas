@@ -12,6 +12,7 @@ export class SeedService implements OnModuleInit {
     await this.seedRoles();
     await this.seedPermissions();
     await this.seedOrganization();
+    await this.seedSpecialties();
     await this.seedUsers();
   }
 
@@ -107,5 +108,77 @@ export class SeedService implements OnModuleInit {
         isActive: true,
       },
     });
+  }
+
+  private async seedSpecialties() {
+    const defaultSpecialties = [
+      { category: 'medical', name: 'Clínica Geral' },
+      { category: 'medical', name: 'Cardiologia' },
+      { category: 'medical', name: 'Dermatologia' },
+      { category: 'medical', name: 'Endocrinologia' },
+      { category: 'medical', name: 'Gastroenterologia' },
+      { category: 'medical', name: 'Geriatria' },
+      { category: 'medical', name: 'Ginecologia' },
+      { category: 'medical', name: 'Neurologia' },
+      { category: 'medical', name: 'Oftalmologia' },
+      { category: 'medical', name: 'Ortopedia' },
+      { category: 'medical', name: 'Pediatria' },
+      { category: 'medical', name: 'Psiquiatria' },
+      { category: 'medical', name: 'Pneumologia' },
+      { category: 'medical', name: 'Reumatologia' },
+      { category: 'medical', name: 'Urologia' },
+      { category: 'dental', name: 'Ortodontia' },
+      { category: 'dental', name: 'Periodontia' },
+      { category: 'dental', name: 'Endodontia' },
+      { category: 'dental', name: 'Cirurgia Oral' },
+      { category: 'dental', name: 'Implantodontia' },
+      { category: 'dental', name: 'Prótese Dentária' },
+      { category: 'dental', name: 'Odontopediatria' },
+      { category: 'psychology', name: 'Psicologia Clínica' },
+      { category: 'psychology', name: 'Psicologia Escolar' },
+      { category: 'psychology', name: 'Psicologia Organizacional' },
+      { category: 'psychology', name: 'Neuropsicologia' },
+      { category: 'psychology', name: 'Psicologia Infantil' },
+      { category: 'psychology', name: 'Psicologia da Saúde' },
+      { category: 'nutrition', name: 'Nutrição Clínica' },
+      { category: 'nutrition', name: 'Nutrição Esportiva' },
+      { category: 'nutrition', name: 'Nutrição Pediátrica' },
+      { category: 'nutrition', name: 'Nutrição Gerontológica' },
+      { category: 'nutrition', name: 'Nutrição Oncológica' },
+      { category: 'physiotherapy', name: 'Fisioterapia Ortopédica' },
+      { category: 'physiotherapy', name: 'Fisioterapia Neurológica' },
+      { category: 'physiotherapy', name: 'Fisioterapia Respiratória' },
+      { category: 'physiotherapy', name: 'Fisioterapia Pediátrica' },
+      { category: 'physiotherapy', name: 'Fisioterapia Geriátrica' },
+      { category: 'physiotherapy', name: 'Fisioterapia Esportiva' },
+      { category: 'physiotherapy', name: 'RPG / Souchard' },
+      { category: 'technical', name: 'Técnico em Enfermagem' },
+      { category: 'technical', name: 'Técnico em Radiologia' },
+      { category: 'technical', name: 'Técnico em Análises Clínicas' },
+      { category: 'technical', name: 'Técnico em Saúde Bucal' },
+      { category: 'admin', name: 'Recepção' },
+      { category: 'admin', name: 'Coordenação' },
+      { category: 'admin', name: 'Administrativo Geral' },
+    ];
+
+    const orgId = '00000000-0000-0000-0000-000000000010';
+
+    for (const specialty of defaultSpecialties) {
+      await this.prisma.specialty.upsert({
+        where: {
+          organizationId_name: {
+            organizationId: orgId,
+            name: specialty.name,
+          },
+        },
+        update: {},
+        create: {
+          organizationId: orgId,
+          category: specialty.category,
+          name: specialty.name,
+          isActive: true,
+        },
+      });
+    }
   }
 }

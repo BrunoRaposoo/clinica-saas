@@ -7,9 +7,10 @@ export class ProfessionalsService {
 
   async findAll(organizationId: string) {
     const professionals = await this.prisma.professional.findMany({
-      where: { organizationId, isActive: true },
+      where: { organizationId },
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        user: true,
+        specialty: true,
         appointmentType: true,
       },
       orderBy: { user: { name: 'asc' } },
@@ -19,6 +20,7 @@ export class ProfessionalsService {
       id: p.id,
       userId: p.userId,
       organizationId: p.organizationId,
+      specialtyId: p.specialtyId,
       specialty: p.specialty,
       appointmentTypeId: p.appointmentTypeId,
       color: p.color,
@@ -39,6 +41,7 @@ export class ProfessionalsService {
       where: { id, organizationId },
       include: {
         user: true,
+        specialty: true,
         appointmentType: true,
       },
     });
@@ -46,9 +49,22 @@ export class ProfessionalsService {
     if (!professional) throw new NotFoundException('Profissional não encontrado.');
 
     return {
-      ...professional,
+      id: professional.id,
+      userId: professional.userId,
+      organizationId: professional.organizationId,
+      specialtyId: professional.specialtyId,
+      specialty: professional.specialty,
+      appointmentTypeId: professional.appointmentTypeId,
+      color: professional.color,
+      isActive: professional.isActive,
       createdAt: professional.createdAt.toISOString(),
       updatedAt: professional.updatedAt.toISOString(),
+      user: { id: professional.user.id, name: professional.user.name, email: professional.user.email },
+      appointmentType: professional.appointmentType ? {
+        id: professional.appointmentType.id,
+        name: professional.appointmentType.name,
+        duration: professional.appointmentType.duration,
+      } : undefined,
     };
   }
 }

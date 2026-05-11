@@ -19,6 +19,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { PrismaModule } from './common/prisma.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { SpecialtiesModule } from './modules/specialties/specialties.module';
 import { SeedService } from './common/seed.service';
 import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
 
@@ -55,6 +56,7 @@ import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
     DashboardModule,
     IntegrationsModule,
     SettingsModule,
+    SpecialtiesModule,
   ],
   providers: [SeedService, MetricsInterceptor],
 })

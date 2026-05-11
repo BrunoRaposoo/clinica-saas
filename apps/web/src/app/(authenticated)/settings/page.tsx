@@ -6,7 +6,7 @@ import { useRole } from '@/hooks/use-role';
 const settingsItems = [
   { href: '/settings/general', label: 'Configurações Gerais', description: 'Dados da clínica, logo, contato', allowedRoles: ['org_admin', 'super_admin'] },
   { href: '/settings/units', label: 'Unidades', description: 'Filiais e locais de atendimento', allowedRoles: ['org_admin', 'super_admin'] },
-  { href: '/settings/professionals', label: 'Profissionais', description: 'Cadastro de profissionais da clínica', allowedRoles: ['org_admin', 'super_admin'] },
+  { href: '/settings/team', label: 'Equipe', description: 'Profissionais e recepcionistas', allowedRoles: ['org_admin', 'super_admin'] },
 ];
 
 export default function SettingsPage() {
