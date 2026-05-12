@@ -61,7 +61,7 @@ export function TaskChecklist({ taskId, items, readOnly = false }: TaskChecklist
   const completedCount = items.filter(i => i.isCompleted).length;
 
   return (
-    <div className="bg-green-50 rounded-lg p-4">
+    <div className="bg-green-50 rounded-lg p-3 sm:p-4">
       <div className="flex justify-between items-center mb-3">
         <h3 className="text-sm font-semibold text-green-800">CHECKLIST {items.length > 0 && `(${completedCount}/${items.length})`}</h3>
         {!readOnly && (
@@ -76,34 +76,36 @@ export function TaskChecklist({ taskId, items, readOnly = false }: TaskChecklist
       </div>
 
       {isAdding && (
-        <div className="flex gap-2 mb-3">
+        <div className="flex flex-col gap-2 mb-3">
           <input
             type="text"
             value={newItem}
             onChange={(e) => setNewItem(e.target.value)}
             placeholder="Novo item..."
-            className="flex-1 px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
             autoFocus
           />
-          <button
-            type="button"
-            onClick={handleAdd}
-            className="px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700"
-          >
-            Add
-          </button>
-          <button
-            type="button"
-            onClick={() => { setIsAdding(false); setNewItem(''); }}
-            className="px-3 py-2 text-gray-600 text-sm rounded hover:bg-gray-100"
-          >
-            Cancel
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleAdd}
+              className="flex-1 px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+            >
+              Add
+            </button>
+            <button
+              type="button"
+              onClick={() => { setIsAdding(false); setNewItem(''); }}
+              className="flex-1 px-3 py-2 text-gray-600 text-sm rounded hover:bg-gray-100"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 
-      <div className="space-y-2">
+      <div className="max-h-48 overflow-y-auto space-y-2">
         {items.map((item) => (
           <div key={item.id} className="flex items-center gap-2 group">
             <input
